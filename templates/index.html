@@ -1,0 +1,31 @@
+<html>
+
+<head>
+    <title>MMOTKW</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/static/style.css" rel="stylesheet"/>
+</head>
+
+<body>
+    <header>
+        <h1>MMOTKW</h1>
+        <p>The ultimate maimai page</p>
+    </header>
+    <main>
+        {{range .}}
+        <div class="week">
+            <h2>Week {{.KW}}</h2>
+            {{range .Maimais}}
+            <div class="meme">
+                <p>{{.User}}</p>
+                <a href="{{.Href}}" target="_blank" rel="noopener noreferrer" >
+                    <img src="{{.Href}}"/>
+                </a>
+            </div>
+            {{end}}
+        </div>
+        {{end}}
+    </main>
+</body>
+
+</html>

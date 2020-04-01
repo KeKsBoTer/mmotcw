@@ -1,78 +1,24 @@
 package main
 
 import (
+	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"path/filepath"
 	"sort"
-	"strings"
+	"strconv"
 	"text/template"
-
-	"regexp"
 	"time"
 
-	"strconv"
-
-	"golang.org/x/net/html"
+	"regexp"
 )
-
-// File is a file :D
-type File struct {
-	name string
-	dir  bool
-	time time.Time
-}
-
-var dateRe = regexp.MustCompile(`\s*\d{2}-\w{3}-\d{4} \d{2}:\d{2}\s+\d+`)
-
-func getFiles(url string) ([]File, error) {
-	res, err := http.Get(url)
-	if err != nil {
-		return nil, err
-	}
-
-	z := html.NewTokenizer(res.Body)
-
-	files := []File{}
-	for {
-		tt := z.Next()
-		switch {
-		case tt == html.ErrorToken:
-			sort.Slice(files[:], func(i, j int) bool {
-				return files[i].time.After(files[j].time)
-			})
-			return files, nil
-		case tt == html.TextToken:
-			t := z.Token()
-			if dateRe.Match([]byte(t.Data)) {
-				date := strings.Split(strings.Trim(t.Data, " "), "  ")[0]
-				files[len(files)-1].time, err = time.Parse("02-Jan-2006 15:04", date)
-				if err != nil {
-					fmt.Println(err)
-				}
-			}
-
-		case tt == html.StartTagToken:
-			t := z.Token()
-			isAnchor := t.Data == "a"
-			if isAnchor {
-				for _, a := range t.Attr {
-					if a.Key == "href" && !strings.HasPrefix(a.Val, "..") {
-						files = append(files, File{
-							name: a.Val,
-							dir:  strings.HasSuffix(a.Val, "/"),
-						})
-						break
-					}
-				}
-			}
-		}
-	}
-}
 
 type Maimai struct {
 	User string
 	Href string
+	Time time.Time
 }
 
 type Week struct {
@@ -82,44 +28,64 @@ type Week struct {
 
 var fre = regexp.MustCompile(`CW_\d{2}`)
 
-func getMaimais(baseUrl string) ([]Week, error) {
-	weeks := []Week{}
-	baseFiles, err := getFiles(baseUrl)
+func getMaimais(baseDir string, pathPrefix string) ([]Week, error) {
+	weekFolders, err := filepath.Glob(filepath.Join(baseDir, "CW_*"))
 	if err != nil {
-		log.Fatalln(err)
 		return nil, err
 	}
-	for _, w := range baseFiles {
-		if w.dir && fre.Match([]byte(w.name[:5])) {
-			kw, _ := strconv.Atoi(w.name[3:5])
-			week := Week{Maimais: []Maimai{}, KW: kw}
-			maimais, err := getFiles(baseUrl + w.name)
-			if err != nil {
-				return nil, err
-			}
-			for _, m := range maimais {
-				if !m.dir && (strings.HasSuffix(m.name, ".png") || strings.HasSuffix(m.name, ".gif") || strings.HasSuffix(m.name, ".jpg") || strings.HasSuffix(m.name, ".jpeg")) {
-					week.Maimais = append(week.Maimais, Maimai{
-						User: m.name,
-						Href: baseUrl + w.name + m.name,
-					})
-				}
-			}
-			weeks = append(weeks, week)
+	weeks := make([]Week, len(weekFolders))
+	for i, w := range weekFolders {
+
+		cw, err := strconv.Atoi(filepath.Base(w)[3:])
+		if err != nil {
+			return nil, err
 		}
+		imgFiles, err := ioutil.ReadDir(w)
+		if err != nil {
+			return nil, err
+		}
+		week := Week{
+			Maimais: make([]Maimai, len(imgFiles)),
+			KW:      cw,
+		}
+		for j, img := range imgFiles {
+			week.Maimais[j] = Maimai{
+				User: filepath.Base(img.Name()),
+				Href: filepath.Join(pathPrefix, filepath.Base(w), img.Name()),
+				Time: img.ModTime(),
+			}
+		}
+		sort.Slice(week.Maimais[:], func(i, j int) bool {
+			return week.Maimais[i].Time.After(week.Maimais[j].Time)
+		})
+		weeks[i] = week
 	}
+	sort.Slice(weeks[:], func(i, j int) bool {
+		return weeks[i].KW > weeks[j].KW
+	})
 	return weeks, nil
 }
 
-func main() {
+var templates = template.Must(template.ParseGlob("templates/*.html"))
 
-	tmpl, err := template.ParseFiles("index.html")
+func main() {
+	var directory = flag.String("dir", ".", "the maimai directory")
+	var port = flag.Int("port", 8080, "port to run on")
+	flag.Parse()
+
+	tmpl, err := template.ParseFiles("templates/index.html")
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	index := func(w http.ResponseWriter, r *http.Request) {
-		maimais, err := getMaimais("https://marg.selfhost.co/mmotcw/")
+		if r.URL.Path != "/" {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("404 - not found"))
+			return
+		}
+		tmpl, err = template.ParseFiles("templates/index.html")
+		maimais, err := getMaimais(*directory, "mm")
 		if err != nil {
 			log.Fatalln(err)
 		}
@@ -129,8 +95,15 @@ func main() {
 		}
 	}
 
+	fs := http.FileServer(http.Dir("./static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
+	fs2 := http.FileServer(http.Dir(*directory))
+	http.Handle("/mm/", http.StripPrefix("/mm/", fs2))
+
 	http.HandleFunc("/", index)
-	if err := http.ListenAndServe(":8080", nil); err != nil {
+
+	if err := http.ListenAndServe(":"+strconv.Itoa(*port), nil); err != nil {
 		log.Fatalln(err)
 	}
 }

@@ -1,0 +1,49 @@
+body{
+    font-family: 'Courier New', Courier, monospace;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+header{
+    text-align: center;
+}
+
+h1{
+    font-size: 48px;
+    margin: 5px 0;
+}
+
+p{
+    font-size: 16px;
+    margin: 5px;
+}
+
+.week h2{
+    font-size: 18px;
+}
+
+.week .meme{
+    display: inline-block;
+    position: relative;
+    vertical-align: top;
+}
+
+.meme:hover p{
+    opacity: 0;
+}
+
+.week img{
+    width: 300px;
+    min-width: 300px;
+    min-height: 200px;
+    background-color: lightgray;
+}
+
+.week p{
+    position: absolute;
+    padding: 3px 5px;
+    background-color: white;
+    opacity: 1;
+    transition: opacity 0.2s;
+}
