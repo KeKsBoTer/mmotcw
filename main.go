@@ -24,6 +24,7 @@ type Maimai struct {
 type Week struct {
 	Maimais []Maimai
 	KW      int
+	Result  string
 }
 
 var fre = regexp.MustCompile(`CW_\d{2}`)
@@ -45,14 +46,31 @@ func getMaimais(baseDir string, pathPrefix string) ([]Week, error) {
 			return nil, err
 		}
 		week := Week{
-			Maimais: make([]Maimai, len(imgFiles)),
+			Maimais: []Maimai{},
 			KW:      cw,
 		}
-		for j, img := range imgFiles {
-			week.Maimais[j] = Maimai{
-				User: filepath.Base(img.Name()),
-				Href: filepath.Join(pathPrefix, filepath.Base(w), img.Name()),
-				Time: img.ModTime(),
+		for _, img := range imgFiles {
+			if !img.IsDir() {
+				switch filepath.Ext(img.Name())[1:] {
+				case
+					"jpg",
+					"jpeg",
+					"gif",
+					"png":
+					week.Maimais = append(week.Maimais, Maimai{
+						User: img.Name(),
+						Href: filepath.Join(pathPrefix, filepath.Base(w), img.Name()),
+						Time: img.ModTime(),
+					})
+					break
+				case "html":
+					abs := filepath.Join(w, img.Name())
+					content, err := ioutil.ReadFile(abs)
+					if err != nil {
+						return nil, err
+					}
+					week.Result = string(content)
+				}
 			}
 		}
 		sort.Slice(week.Maimais[:], func(i, j int) bool {

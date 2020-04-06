@@ -8,21 +8,35 @@
 
 <body>
     <header>
-        <h1>MMOTKW</h1>
-        <p>The ultimate maimai page</p>
+        <h1>MMOTCW</h1>
+        <small>Maimai of the corona week</small>
     </header>
     <main>
+        <div class="uploader">
+            <form action="/upload/upload.php" method="post" enctype="multipart/form-data">
+                Maimai pfostieren:
+                <input type="file" name="fileToUpload" id="fileToUpload">
+                <input type="submit" value="In die Wolken schicken" name="submit">
+            </form>
+        </div>
         {{range .}}
         <div class="week">
             <h2>Week {{.KW}}</h2>
-            {{range .Maimais}}
-            <div class="meme">
-                <p>{{.User}}</p>
-                <a href="{{.Href}}" target="_blank" rel="noopener noreferrer" >
-                    <img src="{{.Href}}"/>
-                </a>
+            <div class="maimais">
+                {{if .Result }}
+                <div class="results">
+                    {{.Result}}
+                </div>
+                {{end}}
+                {{range .Maimais}}
+                <div class="meme">
+                    <p>{{.User}}</p>
+                    <a href="{{.Href}}" target="_blank" rel="noopener noreferrer" >
+                        <img src="{{.Href}}"/>
+                    </a>
+                </div>
+                {{end}}
             </div>
-            {{end}}
         </div>
         {{end}}
     </main>
