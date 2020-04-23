@@ -1,45 +1,58 @@
 <html>
+	<head>
+		<title>MMOTKW</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link href="/static/style.css" rel="stylesheet" />
+	</head>
 
-<head>
-    <title>MMOTKW</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="/static/style.css" rel="stylesheet"/>
-</head>
-
-<body>
-    <header>
-        <h1>MMOTCW</h1>
-        <small>Maimai of the corona week</small>
-    </header>
-    <main>
-        <div class="uploader">
+	<body>
+		<header>
+			<h1>MMOTCW</h1>
+			<small>Maimai of the corona week</small>
+		</header>
+		<main>
+ <div class="uploader">
             <form action="/upload/upload.php" method="post" enctype="multipart/form-data">
+                    <label>Künstler*in:
+                            <select name="createdby" size="1">
+                                    <option>Matthis</option>
+                                    <option>Christian</option>
+                                    <option>Lena</option>
+                                    <option>Daniel</option>
+                                    <option>Simon</option>
+                                    <option>Marvin</option>
+                                    <option>Lorenz</option>
+                                    <option>Fabio</option>
+                                    <option>Jannis</option>
+                            </select>
+                    </label>
+                    </br>
                 Maimai pfostieren:
                 <input type="file" name="fileToUpload" id="fileToUpload">
                 <input type="submit" value="In die Wolken schicken" name="submit">
             </form>
         </div>
-        {{range .}}
-        <div class="week">
-            <h2>Week {{.KW}}</h2>
-            <div class="maimais">
-                {{if .Result }}
-                <div class="results">
-                    {{.Result}}
-                </div>
-                {{end}}
-                {{range .Maimais}}
-                <div class="meme">
-                    <p>{{.User}}</p>
-                    <a href="{{.Href}}" target="_blank" rel="noopener noreferrer" >
-                        <img src="{{.Href}}"/>
-                    </a>
-                </div>
-                {{end}}
-            </div>
-        </div>
-        {{end}}
-    </main>
-</body>
-
+			{{range .}}
+			<div class="week">
+				<h2 class="weekRef" onclick="window.location.href=`CW_${Number({{.KW}})}`">
+					Week {{.KW}}
+				</h2>
+				<div class="maimais">
+					{{if .Result }}
+					<div class="results card">
+						{{.Result}}
+					</div>
+					{{end}} {{range .Maimais}}
+					<div class="meme card">
+						<p>{{.User}}</p>
+						<a href="{{.Href}}" target="_blank" rel="noopener noreferrer">
+							<img src="{{.Href}}" />
+						</a>
+					</div>
+					{{end}}
+				</div>
+			</div>
+			{{end}}
+		</main>
+	</body>
 </html>

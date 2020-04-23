@@ -1,0 +1,48 @@
+<html>
+	<head>
+		<title>MMOTKW</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link href="/static/style.css" rel="stylesheet" />
+	</head>
+
+	<body>
+		<div class="navigate">
+			<div class="card" id="prev" onclick="window.location.href=`CW_${Number({{.KW}})-1}`">
+				< prev
+			</div>
+			<div class="card" onclick="window.location.href='\/'">Overview</div>
+			<div id="next" class="card" onclick="window.location.href=`CW_${Number({{.KW}})+1}`">
+				next >
+			</div>
+		</div>
+		<!-- {{if .IsCurrentWeek}}
+		<div class="vote">
+			<form
+				action="CW_{{.KW}}/vote"
+				method="post"
+				enctype="application/x-www-form-urlencoded"
+			>
+				<input type="text" name="voter" placeholder="Erobere deinen Namen..." />
+				<input type="submit" value="Wähle weise" name="submit" />
+			</form>
+		</div>
+		{{end}} -->
+		<div class="week">
+			<h2>Week {{.KW}}</h2>
+			<div class="maimais">
+				{{if .Result }}
+				<div class="results card">
+					{{.Result}}
+				</div>
+				{{end}} {{range .Maimais}}
+				<div class="meme card">
+					<p>{{.User}}</p>
+					<a href="{{.Href}}" target="_blank" rel="noopener noreferrer">
+						<img src="{{.Href}}" />
+					</a>
+				</div>
+				{{end}}
+			</div>
+		</div>
+	</body>
+</html>
