@@ -38,7 +38,7 @@ func getMaimais(baseDir string, pathPrefix string) ([]Week, error) {
 		week, err := getMaiMaiPerCW(pathPrefix, w)
 
 		if err != nil {
-			fmt.Println(err)
+			return nil, err
 		}
 		sort.Slice(week.Maimais[:], func(i, j int) bool {
 			return week.Maimais[i].Time.After(week.Maimais[j].Time)
@@ -101,6 +101,7 @@ func main() {
 	tmpl, err := template.ParseFiles("templates/index.html")
 	if err != nil {
 		log.Fatalln(err)
+		return
 	}
 
 	index := func(w http.ResponseWriter, r *http.Request) {
@@ -113,10 +114,12 @@ func main() {
 		maimais, err := getMaimais(*directory, "mm")
 		if err != nil {
 			log.Fatalln(err)
+			return
 		}
 		err = tmpl.Execute(w, maimais)
 		if err != nil {
 			fmt.Println(err)
+			return
 		}
 	}
 	maimai := func(cw string, maimaisInCW Week) func(http.ResponseWriter, *http.Request) {
@@ -127,6 +130,7 @@ func main() {
 			// maimais, err := getMaimais(*directory, "mm")
 			if err != nil {
 				log.Fatalln(err)
+				return
 			}
 			err = tmpl.Execute(w, maimaisInCW)
 			if err != nil {
@@ -139,7 +143,6 @@ func main() {
 		return func(w http.ResponseWriter, r *http.Request) {
 			if r.Method == "POST" {
 				fmt.Println("VOTE")
-
 			}
 			http.Redirect(w, r, fmt.Sprintf("/CW_%v", maimaisInCW.KW), http.StatusFound)
 		}
@@ -158,6 +161,7 @@ func main() {
 		maimaisInCW, err := getMaiMaiPerCW("mm", filepath.Join(*directory, w.Name()))
 		if err != nil {
 			fmt.Println(err)
+			continue
 		}
 
 		// last week is the current one.
