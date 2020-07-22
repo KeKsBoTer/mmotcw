@@ -10,7 +10,10 @@ RUN CGO_ENABLED=0 go build -ldflags="-s -w" -a -installsuffix nocgo -o mmotkw .
 
 FROM gcr.io/distroless/base
 WORKDIR /root/
-COPY templates/index.html templates/index.html
+COPY templates templates
+COPY static static
+
 COPY --from=builder /server/mmotkw .
+
 EXPOSE 8080
 ENTRYPOINT [ "./mmotkw","--port","8080","--dir","/root/mm"]

@@ -91,27 +91,15 @@ func getMaiMaiPerCW(pathPrefix string, w string) (*Week, error) {
 	return &week, nil
 }
 
-var templates = template.Must(template.ParseGlob("templates/*.html"))
-
-func main() {
-	var directory = flag.String("dir", ".", "the maimai directory")
-	var port = flag.Int("port", 8080, "port to run on")
-	flag.Parse()
-
-	tmpl, err := template.ParseFiles("templates/index.html")
-	if err != nil {
-		log.Fatalln(err)
-		return
-	}
-
-	index := func(w http.ResponseWriter, r *http.Request) {
+func index(template template.Template, directory, mmPath string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte("404 - not found"))
 			return
 		}
-		tmpl, err = template.ParseFiles("templates/index.html")
-		maimais, err := getMaimais(*directory, "mm")
+		tmpl, err := template.ParseFiles("templates/index.html")
+		maimais, err := getMaimais(directory, mmPath)
 		if err != nil {
 			log.Fatalln(err)
 			return
@@ -122,54 +110,26 @@ func main() {
 			return
 		}
 	}
-	maimai := func(cw string, maimaisInCW Week) func(http.ResponseWriter, *http.Request) {
+}
 
-		return func(w http.ResponseWriter, r *http.Request) {
+var templates = template.Must(template.ParseGlob("templates/*.html"))
 
-			tmpl, err = template.ParseFiles("templates/maimai.html")
-			// maimais, err := getMaimais(*directory, "mm")
-			if err != nil {
-				log.Fatalln(err)
-				return
-			}
-			err = tmpl.Execute(w, maimaisInCW)
-			if err != nil {
-				fmt.Println(err)
-			}
-		}
-	}
-	vote := func(maimaisInCW Week) func(http.ResponseWriter, *http.Request) {
+func main() {
+	var directory = flag.String("dir", ".", "the maimai directory")
+	var port = flag.Int("port", 8080, "port to run on")
+	var mmPath = flag.String("mm", "/", "maimai base path")
+	flag.Parse()
 
-		return func(w http.ResponseWriter, r *http.Request) {
-			if r.Method == "POST" {
-				fmt.Println("VOTE")
-			}
-			http.Redirect(w, r, fmt.Sprintf("/CW_%v", maimaisInCW.KW), http.StatusFound)
-		}
+	tmpl, err := template.ParseFiles("templates/index.html")
+	if err != nil {
+		log.Fatalln(err)
+		return
 	}
 
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	fs2 := http.FileServer(http.Dir(*directory))
-	http.Handle("/mm/", http.StripPrefix("/mm/", fs2))
-
-	http.HandleFunc("/", index)
-	maimaiList, err := ioutil.ReadDir(*directory)
-	for i, w := range maimaiList {
-
-		maimaisInCW, err := getMaiMaiPerCW("mm", filepath.Join(*directory, w.Name()))
-		if err != nil {
-			fmt.Println(err)
-			continue
-		}
-
-		// last week is the current one.
-		maimaisInCW.IsCurrentWeek = len(maimaiList)-1 == i
-
-		http.HandleFunc("/"+w.Name(), maimai(w.Name(), *maimaisInCW))
-		http.HandleFunc("/"+w.Name()+"/vote", vote(*maimaisInCW))
-	}
+	http.HandleFunc("/", index(*tmpl, *directory, *mmPath))
 
 	if err := http.ListenAndServe(":"+strconv.Itoa(*port), nil); err != nil {
 		log.Fatalln(err)
