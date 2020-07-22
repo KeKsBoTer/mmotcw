@@ -2,7 +2,8 @@
 	<head>
 		<title>MMOTKW</title>
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link href="/static/style.css" rel="stylesheet" />
+		<link href="/static/style.css" rel="stylesheet" type="text/css"/>
+		<script src="static/elevator.min.js"></script>
 	</head>
 
 	<body>
@@ -54,5 +55,19 @@
 			</div>
 			{{end}}
 		</main>
+
+	<div class="elevator-button">Back to Top</div>
+
+	<script>
+	// Elevator script included on the page, already.
+	
+	window.onload = function() {
+  		var elevator = new Elevator({
+    			element: document.querySelector('.elevator-button'),
+    			mainAudio: 'static/sound/elevator.mp3',
+    			endAudio: 'static/sound/ding.mp3'
+  		});
+	}
+	</script>
 	</body>
 </html>
