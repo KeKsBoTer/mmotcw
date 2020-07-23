@@ -90,6 +90,13 @@ p {
 	grid-template-columns: repeat(2,1fr);
 }
 
+@media screen and (max-width:720px){
+	.maimais {
+		display: flex;
+		flex-wrap: wrap;
+	}
+}
+
 .week .meme {
 	flex-shrink: 1;
 	display: inline-flex;
