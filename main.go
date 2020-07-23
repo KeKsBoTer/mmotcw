@@ -91,6 +91,7 @@ func getMaiMaiPerCW(pathPrefix string, w string) (*Week, error) {
 	return &week, nil
 }
 
+
 func index(template template.Template, directory, mmPath string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
@@ -98,13 +99,12 @@ func index(template template.Template, directory, mmPath string) http.HandlerFun
 			w.Write([]byte("404 - not found"))
 			return
 		}
-		tmpl, err := template.ParseFiles("templates/index.html")
 		maimais, err := getMaimais(directory, mmPath)
 		if err != nil {
 			log.Fatalln(err)
 			return
 		}
-		err = tmpl.Execute(w, maimais)
+		err = template.Execute(w, maimais)
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -112,7 +112,10 @@ func index(template template.Template, directory, mmPath string) http.HandlerFun
 	}
 }
 
-var templates = template.Must(template.ParseGlob("templates/*.html"))
+func faviconHandler(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "static/favicon.ico")
+}
+
 
 func main() {
 	var directory = flag.String("dir", ".", "the maimai directory")
@@ -120,11 +123,15 @@ func main() {
 	var mmPath = flag.String("mm", "/", "maimai base path")
 	flag.Parse()
 
-	tmpl, err := template.ParseFiles("templates/index.html")
-	if err != nil {
-		log.Fatalln(err)
-		return
+	funcMap := template.FuncMap{
+		"even": func(i int) bool {
+			return i%2 == 0 
+		},
 	}
+
+	tmpl := template.Must(template.New("index.html").Funcs(funcMap).ParseFiles("templates/index.html"))
+	
+	http.HandleFunc("/favicon.ico", faviconHandler)
 
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))

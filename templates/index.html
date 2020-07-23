@@ -1,18 +1,20 @@
 <html>
-	<head>
-		<title>MMOTKW</title>
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<link href="/static/style.css" rel="stylesheet" type="text/css"/>
-		<script src="static/elevator.min.js"></script>
-	</head>
+    <head>
+        <title>MMOTKW</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <link href="/static/style.css" rel="stylesheet" type="text/css"/>
+        <link rel="icon" type="image/ico" href="favicon.ico">
+        
+        <script src="static/elevator.min.js"></script>
+    </head>
 
-	<body>
-		<header>
-			<h1>MMOTCW</h1>
-			<small>Maimai of the corona week</small>
-		</header>
-		<main>
- <div class="uploader">
+    <body>
+        <header>
+            <h1>MMOTCW</h1>
+            <small>Maimai of the corona week</small>
+        </header>
+        <main>
+         <div class="uploader">
             <form action="/upload/upload.php" method="post" enctype="multipart/form-data">
                     <label>Künstler*in:
                             <select name="createdby" size="1">
@@ -33,41 +35,57 @@
                 <input type="submit" value="In die Wolken schicken" name="submit">
             </form>
         </div>
-			{{range .}}
-			<div class="week">
-				<h2 class="weekRef" onclick="window.location.href=`CW_${Number({{.KW}})}`">
-					Week {{.KW}}
-				</h2>
-				<div class="maimais">
-					{{if .Result }}
-					<div class="results card">
-						{{.Result}}
-					</div>
-					{{end}} {{range .Maimais}}
-					<div class="meme card">
-						<p>{{.User}}</p>
-						<a href="{{.Href}}" target="_blank" rel="noopener noreferrer">
-							<img src="{{.Href}}" />
-						</a>
-					</div>
-					{{end}}
-				</div>
-			</div>
-			{{end}}
-		</main>
+            {{range .}}
+            <div class="week">
+                <h2>Week {{.KW}}</h2>
+                <div class="maimais">
+                    <div class="left">
+                        {{if .Result }}
+                            <div class="results card">
+                                {{.Result}}
+                            </div>
+                        {{end}}
 
-	<div class="elevator-button">Back to Top</div>
+                        {{range $index, $v := .Maimais}}
+                            {{if not (even $index)}}
+                            <div class="meme card">
+                                <p>{{$v.User}}</p>
+                                <a href="{{$v.Href}}" target="_blank" rel="noopener noreferrer">
+                                    <img src="{{$v.Href}}" loading="lazy" />
+                                </a>
+                            </div>
+                            {{end}}
+                        {{end}}
+                    </div>
+                    <div class="right">
+                        {{range $index, $v := .Maimais}}
+                            {{if even $index}}
+                            <div class="meme card">
+                                <p>{{$v.User}}</p>
+                                <a href="{{$v.Href}}" target="_blank" rel="noopener noreferrer">
+                                    <img src="{{$v.Href}}" loading="lazy" />
+                                </a>
+                            </div>
+                            {{end}}
+                        {{end}}
+                    </div>
+                </div>
+            </div>
+            {{end}}
+        </main>
 
-	<script>
-	// Elevator script included on the page, already.
-	
-	window.onload = function() {
-  		var elevator = new Elevator({
-    			element: document.querySelector('.elevator-button'),
-    			mainAudio: 'static/sound/elevator.mp3',
-    			endAudio: 'static/sound/ding.mp3'
-  		});
-	}
-	</script>
-	</body>
+    <div class="elevator-button">Back to Top</div>
+
+    <script>
+    // Elevator script included on the page, already.
+    
+    window.onload = function() {
+          var elevator = new Elevator({
+                element: document.querySelector('.elevator-button'),
+                mainAudio: 'static/sound/elevator.mp3',
+                endAudio: 'static/sound/ding.mp3'
+          });
+    }
+    </script>
+    </body>
 </html>
