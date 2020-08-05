@@ -31,14 +31,51 @@
                             </select>
                     </label>
                     </br>
-                Maimai pfostieren:
-                <input type="file" name="fileToUpload" id="fileToUpload">
-                <input type="submit" value="In die Wolken schicken" name="submit">
-            </form>
-        </div>
-            {{range .}}
+                    Maimai pfostieren:
+                    <input type="file" name="fileToUpload" id="fileToUpload">
+                    <input type="submit" value="In die Wolken schicken" name="submit">
+                </form>
+            </div>
+            {{range $week_index, $bla := .}}
             <div class="week">
                 <h2>Week {{.KW}}</h2>
+                {{if eq $week_index 0}}
+                <form action="/register_vote.php">
+                    <table>
+                        {{$votes := numvotes .Maimais}}
+                        {{range $i, $maimai := .Maimais}}
+                        {{if eq $i 0}}
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th colspan="{{len $votes}}">Stimme</th>
+                            </tr>
+                            <tr>
+                                <th>Maimai</th>
+                                {{range $votes}}
+                                <th>{{.}}</th>
+                                {{end}}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{end}}
+                            <tr>
+                                <td>{{.User}}</td>
+                                {{range $votes}}
+                                <td>
+                                    <input type="radio" id="{{$maimai.User}}" name="vote_{{.}}" value="{{$maimai.User}}">
+                                </td>
+                                {{end}}
+                            </tr>
+                            {{end}}
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr><td><input type="submit" value="Abstimmen!"></td></tr>
+                        </tfoot>
+                    </table>
+                </form>
+                {{end}}
                 <div class="maimais">
                     {{if .Result }}
                         <div class="results card">
