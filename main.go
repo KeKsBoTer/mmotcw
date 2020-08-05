@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math"
 	"net/http"
 	"path/filepath"
 	"sort"
@@ -25,6 +26,10 @@ type Week struct {
 	KW            int
 	Result        string
 	IsCurrentWeek bool
+}
+
+func voteCount(i int) int {
+	return int(math.Sqrt(float64(i)) * 1.15)
 }
 
 func getMaimais(baseDir string, pathPrefix string) ([]Week, error) {
@@ -91,7 +96,6 @@ func getMaiMaiPerCW(pathPrefix string, w string) (*Week, error) {
 	return &week, nil
 }
 
-
 func index(template template.Template, directory, mmPath string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
@@ -116,7 +120,6 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/favicon.ico")
 }
 
-
 func main() {
 	var directory = flag.String("dir", ".", "the maimai directory")
 	var port = flag.Int("port", 8080, "port to run on")
@@ -124,13 +127,18 @@ func main() {
 	flag.Parse()
 
 	funcMap := template.FuncMap{
-		"even": func(i int) bool {
-			return i%2 == 0 
+		"numvotes": func(maimais []Maimai) []int {
+			v := voteCount(len(maimais))
+			votes := make([]int, v)
+			for i, _ := range votes {
+				votes[i] = i
+			}
+			return votes
 		},
 	}
 
 	tmpl := template.Must(template.New("index.html").Funcs(funcMap).ParseFiles("templates/index.html"))
-	
+
 	http.HandleFunc("/favicon.ico", faviconHandler)
 
 	fs := http.FileServer(http.Dir("./static"))
