@@ -1,2 +1,3 @@
-# MMOTCW - Online Maimai sharing during Cornona lockdown
+# MMOTCW
 
+_Online Maimai sharing during Corona lockdown_
