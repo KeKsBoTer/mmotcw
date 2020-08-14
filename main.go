@@ -272,6 +272,11 @@ func week(template template.Template, directory string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		week := mux.Vars(r)["week"]
 		cwPath := filepath.Join(directory, "CW_"+week)
+		if _, err := os.Stat(cwPath); err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("404 - guck wo anders hin"))
+			return
+		}
 		maimais, err := getMaiMaiPerCW("mm", cwPath)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
