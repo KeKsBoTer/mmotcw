@@ -122,13 +122,7 @@ func getMaiMaiPerCW(pathPrefix string, w string) (*Week, error) {
 
 func index(template template.Template, directory string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user, _, ok := r.BasicAuth()
-		if !ok {
-			w.Header().Set("WWW-Authenticate", `Basic realm="Geheimwort bitte"`)
-			w.WriteHeader(401)
-			w.Write([]byte("Unauthorised.\n"))
-			return
-		}
+		user, _, _ := r.BasicAuth()
 		if r.URL.Path != "/" {
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte("404 page not found"))
