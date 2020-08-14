@@ -33,8 +33,9 @@ type Week struct {
 }
 
 type Vote = struct {
-	File  string
-	Votes int
+	FileName string
+	Votes    int
+	Path     string
 }
 
 func voteCount(i int) int {
@@ -48,7 +49,7 @@ func checkLock(name string, weekFolder string) bool {
 	return err == nil
 }
 
-func getMaimais(baseDir string, pathPrefix string) ([]Week, error) {
+func getMaimais(baseDir string) ([]Week, error) {
 	weekFolders, err := filepath.Glob(filepath.Join(baseDir, "CW_*"))
 	if err != nil {
 		return nil, err
@@ -56,7 +57,7 @@ func getMaimais(baseDir string, pathPrefix string) ([]Week, error) {
 	weeks := make([]Week, len(weekFolders))
 	for i, w := range weekFolders {
 
-		week, err := getMaiMaiPerCW(pathPrefix, w)
+		week, err := getMaiMaiPerCW("mm", w)
 
 		if err != nil {
 			return nil, err
@@ -115,14 +116,14 @@ func getMaiMaiPerCW(pathPrefix string, w string) (*Week, error) {
 	return &week, nil
 }
 
-func index(template template.Template, directory, mmPath string) http.HandlerFunc {
+func index(template template.Template, directory string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/" {
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte("404 - not found"))
 			return
 		}
-		maimais, err := getMaimais(directory, mmPath)
+		maimais, err := getMaimais(directory)
 		if err != nil {
 			log.Fatalln(err)
 			return
@@ -159,8 +160,8 @@ func sortVotes(votes map[string]int) []Vote {
 	votesList := make([]Vote, len(ranked))
 	for i, key := range ranked {
 		votesList[i] = Vote{
-			File:  key,
-			Votes: votes[key],
+			FileName: key,
+			Votes:    votes[key],
 		}
 	}
 	return votesList
@@ -195,7 +196,14 @@ func getVoteResults(weekDir string) ([]Vote, error) {
 		if err != nil {
 			return nil, err
 		}
-		return parseVotesFile(votesFile)
+		votes, err := parseVotesFile(votesFile)
+		if err != nil {
+			return nil, err
+		}
+		for i, v := range votes {
+			votes[i].Path = filepath.Join(weekDir, v.FileName)
+		}
+		return votes, nil
 	}
 	return nil, nil
 }
@@ -203,7 +211,6 @@ func getVoteResults(weekDir string) ([]Vote, error) {
 func main() {
 	var directory = flag.String("dir", ".", "the maimai directory")
 	var port = flag.Int("port", 8080, "port to run on")
-	var mmPath = flag.String("mm", "/", "maimai base path")
 	flag.Parse()
 
 	funcMap := template.FuncMap{
@@ -224,7 +231,11 @@ func main() {
 	fs := http.FileServer(http.Dir("./static"))
 	http.Handle("/static/", http.StripPrefix("/static/", fs))
 
-	http.HandleFunc("/", index(*tmpl, *directory, *mmPath))
+	// file server for maimais
+	fsMaimais := http.FileServer(http.Dir(*directory))
+	http.Handle("/mm/", http.StripPrefix("/mm/", fsMaimais))
+
+	http.HandleFunc("/", index(*tmpl, *directory))
 
 	if err := http.ListenAndServe(":"+strconv.Itoa(*port), nil); err != nil {
 		log.Fatalln(err)
