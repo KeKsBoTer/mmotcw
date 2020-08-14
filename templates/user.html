@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>MMOTKW</title>
+    <title>{{.User}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link href="static/style.css" rel="stylesheet" type="text/css" />
     <link rel="icon" type="image/ico" href="favicon.ico">
@@ -12,36 +12,13 @@
 
 <body>
     <header>
-        <h1>MMOTCW</h1>
-        <small>Maimai of the corona week</small>
-        <a href="{{.User}}" style="color: pink;"><p>Meine Seite</p></a>
+        <h1>{{.User}}</h1>
+        <small>seine/ihre Kunstwerke</small>
     </header>
     <main>
-        <div class="uploader">
-            <form action="/upload/upload.php" method="post" enctype="multipart/form-data">
-                <label>Künstler*in:
-                    <select name="createdby" size="1">
-                        <option>Matthis</option>
-                        <option>Christian</option>
-                        <option>Lena</option>
-                        <option>Daniel</option>
-                        <option>Simon</option>
-                        <option>Marvin</option>
-                        <option>Lorenz</option>
-                        <option>Fabio</option>
-                        <option>Jannis</option>
-                    </select>
-                    <span style="margin: 0;padding: 0;">(du heißt {{.User}})</span>
-                </label>
-                </br>
-                Maimai pfostieren:
-                <input type="file" name="fileToUpload" id="fileToUpload">
-                <input type="submit" value="In die Wolken schicken" name="submit">
-            </form>
-        </div>
         {{range $week_index, $bla := .Weeks}}
         <div class="week">
-            <a href="CW_{{.KW}}" class="weekLink"><h2>Week {{.KW}}</h2></a>
+            <h2>Week {{.KW}}</h2>
             {{if and (eq $week_index 0) $bla.CanVote}}
             <form action="/register_vote.php">
                 <table>

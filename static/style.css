@@ -156,3 +156,13 @@ p {
 	border-radius: 7px 5px;
 	border: 0.5px dashed grey;
 }
+
+.weekLink{
+	text-decoration: none;
+	color: white;
+}
+
+.weekLink:hover {
+	cursor: pointer;
+	text-decoration: underline dashed;
+}

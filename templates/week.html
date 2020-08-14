@@ -1,0 +1,67 @@
+<html>
+
+<head>
+    <title>CW {{.Week}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" type="image/ico" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.ico">
+
+    <script src="static/elevator.min.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>Corona Week {{.Week}}</h1>
+    </header>
+    <main>
+        <div class="week">
+            <div class="maimais">
+                {{if .Maimais.Votes }}
+                <div class="results card">
+                    <h1>Ergebnisse CW_{{.Week}}</h1>
+                    <table class="votesTable">
+                        <tbody>
+                            <tr>
+                                <th>Votes</th>
+                                <th>MaiMai</th>
+                            </tr>
+                            {{range $index, $vote := .Maimais.Votes}}
+                            <tr>
+                                <td>{{$vote.Votes}}</td>
+                                <td><a href="{{$vote.Path}}">{{$vote.FileName}}</a></td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+                {{end}}
+
+                {{range .Maimais.Maimais}}
+                <div class="meme card">
+                    <p>{{.File}}</p>
+                    <a href="{{.Href}}" target="_blank" rel="noopener noreferrer">
+                        <img src="{{.Href}}" loading="lazy" />
+                    </a>
+                </div>
+                {{end}}
+            </div>
+        </div>
+    </main>
+
+    <div class="elevator-button">Back to Top</div>
+
+    <script>
+        // Elevator script included on the page, already.
+
+        window.onload = function () {
+            var elevator = new Elevator({
+                element: document.querySelector('.elevator-button'),
+                mainAudio: 'static/sound/elevator.mp3',
+                endAudio: 'static/sound/ding.mp3'
+            });
+        }
+    </script>
+</body>
+
+</html>
