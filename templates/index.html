@@ -1,113 +1,132 @@
 <html>
-    <head>
-        <title>MMOTKW</title>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link href="static/style.css" rel="stylesheet" type="text/css"/>
-        <link rel="icon" type="image/ico" href="favicon.ico">
-        <link rel="apple-touch-icon" href="favicon.ico">
-        
-        <script src="static/elevator.min.js"></script>
-    </head>
 
-    <body>
-        <header>
-            <h1>MMOTCW</h1>
-            <small>Maimai of the corona week</small>
-        </header>
-        <main>
-         <div class="uploader">
+<head>
+    <title>MMOTKW</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" type="image/ico" href="favicon.ico">
+    <link rel="apple-touch-icon" href="favicon.ico">
+
+    <script src="static/elevator.min.js"></script>
+</head>
+
+<body>
+    <header>
+        <h1>MMOTCW</h1>
+        <small>Maimai of the corona week</small>
+    </header>
+    <main>
+        <div class="uploader">
             <form action="/upload/upload.php" method="post" enctype="multipart/form-data">
-                    <label>Künstler*in:
-                            <select name="createdby" size="1">
-                                    <option>Matthis</option>
-                                    <option>Christian</option>
-                                    <option>Lena</option>
-                                    <option>Daniel</option>
-                                    <option>Simon</option>
-                                    <option>Marvin</option>
-                                    <option>Lorenz</option>
-                                    <option>Fabio</option>
-                                    <option>Jannis</option>
-                            </select>
-                    </label>
-                    </br>
-                    Maimai pfostieren:
-                    <input type="file" name="fileToUpload" id="fileToUpload">
-                    <input type="submit" value="In die Wolken schicken" name="submit">
-                </form>
-            </div>
-            {{range $week_index, $bla := .}}
-            <div class="week">
-                <h2>Week {{.KW}}</h2>
-                {{if eq $week_index 0}}
-                <form action="/register_vote.php">
-                    <table>
-                        {{$votes := numvotes .Maimais}}
-                        {{range $i, $maimai := .Maimais}}
-                        {{if eq $i 0}}
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th colspan="{{len $votes}}">Stimme</th>
-                            </tr>
-                            <tr>
-                                <th>Maimai</th>
-                                {{range $votes}}
-                                <th>{{.}}</th>
-                                {{end}}
-                            </tr>
-                        </thead>
-                        <tbody>
+                <label>Künstler*in:
+                    <select name="createdby" size="1">
+                        <option>Matthis</option>
+                        <option>Christian</option>
+                        <option>Lena</option>
+                        <option>Daniel</option>
+                        <option>Simon</option>
+                        <option>Marvin</option>
+                        <option>Lorenz</option>
+                        <option>Fabio</option>
+                        <option>Jannis</option>
+                    </select>
+                </label>
+                </br>
+                Maimai pfostieren:
+                <input type="file" name="fileToUpload" id="fileToUpload">
+                <input type="submit" value="In die Wolken schicken" name="submit">
+            </form>
+        </div>
+        {{range $week_index, $bla := .}}
+        <div class="week">
+            <h2>Week {{.KW}}</h2>
+            {{if eq $week_index 0}}
+            <form action="/register_vote.php">
+                <table>
+                    {{$votes := numvotes .Maimais}}
+                    {{range $i, $maimai := .Maimais}}
+                    {{if eq $i 0}}
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th colspan="{{len $votes}}">Stimme</th>
+                        </tr>
+                        <tr>
+                            <th>Maimai</th>
+                            {{range $votes}}
+                            <th>{{.}}</th>
                             {{end}}
-                            <tr>
-                                <td>{{.User}}</td>
-                                {{range $votes}}
-                                <td>
-                                    <input type="radio" id="{{$maimai.User}}" name="vote_{{.}}" value="{{$maimai.User}}">
-                                </td>
-                                {{end}}
-                            </tr>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{end}}
+                        <tr>
+                            <td>{{.User}}</td>
+                            {{range $votes}}
+                            <td>
+                                <input type="radio" id="{{$maimai.User}}" name="vote_{{.}}" value="{{$maimai.User}}">
+                            </td>
                             {{end}}
-                            </tr>
-                        </tbody>
-                        <tfoot>
-                            <tr><td><input type="submit" value="Abstimmen!"></td></tr>
-                        </tfoot>
-                    </table>
-                </form>
-                {{end}}
-                <div class="maimais">
-                    {{if .Result }}
-                        <div class="results card">
-                            {{.Result}}
-                        </div>
-                    {{end}}
-
-                    {{range .Maimais}}
-                        <div class="meme card">
-                            <p>{{.User}}</p>
-                            <a href="{{.Href}}" target="_blank" rel="noopener noreferrer">
-                                <img src="{{.Href}}" loading="lazy" />
-                            </a>
-                        </div>
-                    {{end}}
-                </div>
-            </div>
+                        </tr>
+                        {{end}}
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td><input type="submit" value="Abstimmen!"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </form>
             {{end}}
-        </main>
+            <div class="maimais">
+                {{if .Votes }}
+                <div class="results card">
+                    <h1>Ergebnisse CW_{{.KW}}</h1>
+                    <table class="votesTable">
+                        <tbody>
+                            <tr>
+                                <th>Votes</th>
+                                <th>MaiMai</th>
+                            </tr>
+                            {{$KW := .KW}}
+                            {{range $index, $vote := .Votes}}
+                            <tr>
+                                <td>{{$vote.Votes}}</td>
+                                <td><a href="/CW_{{$KW}}/{{$vote.File}}">{{$vote.File}}</a></td>
+                            </tr>
+                            {{end}}
+                        </tbody>
+                    </table>
+                </div>
+                {{end}}
+
+                {{range .Maimais}}
+                <div class="meme card">
+                    <p>{{.User}}</p>
+                    <a href="{{.Href}}" target="_blank" rel="noopener noreferrer">
+                        <img src="{{.Href}}" loading="lazy" />
+                    </a>
+                </div>
+                {{end}}
+            </div>
+        </div>
+        {{end}}
+    </main>
 
     <div class="elevator-button">Back to Top</div>
 
     <script>
-    // Elevator script included on the page, already.
-    
-    window.onload = function() {
-          var elevator = new Elevator({
+        // Elevator script included on the page, already.
+
+        window.onload = function () {
+            var elevator = new Elevator({
                 element: document.querySelector('.elevator-button'),
                 mainAudio: 'static/sound/elevator.mp3',
                 endAudio: 'static/sound/ding.mp3'
-          });
-    }
+            });
+        }
     </script>
-    </body>
+</body>
+
 </html>

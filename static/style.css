@@ -42,25 +42,30 @@ main {
 	background-color: rgb(86, 85, 97);
 	width: 300;
 	margin-bottom: 20px;
+	padding-bottom: 10px;
 }
 
-.week .results img {
-	display: none;
-}
 .week .results h1 {
 	font-size: 16px;
 	color: white;
 	background-color: rgb(41, 40, 54);
 	padding: 3px 7px;
 	border-radius: 3px;
+	margin: 3px;
 }
-.week .results h2 {
-	font-size: 12px;
-	margin-left: 5px;
+
+.results .votesTable{
+	margin: 5px;
+	width: 100%;
 }
-.results p {
-	font-size: 11px;
-	margin-left: 10px;
+
+.results .votesTable th:first-child,
+.results .votesTable td:first-child{
+	text-align: center;
+}
+.results .votesTable th:last-child,
+.results .votesTable td:last-child{
+	text-align: left;
 }
 
 h1 {

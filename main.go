@@ -1,16 +1,19 @@
 package main
 
 import (
+	"encoding/csv"
 	"flag"
 	"fmt"
+	"html/template"
+	"io"
 	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
+	"os"
 	"path/filepath"
 	"sort"
 	"strconv"
-	"text/template"
 	"time"
 )
 
@@ -24,8 +27,13 @@ type Maimai struct {
 type Week struct {
 	Maimais       []Maimai
 	KW            int
-	Result        string
 	IsCurrentWeek bool
+	Votes         []Vote
+}
+
+type Vote = struct {
+	File  string
+	Votes int
 }
 
 func voteCount(i int) int {
@@ -48,6 +56,13 @@ func getMaimais(baseDir string, pathPrefix string) ([]Week, error) {
 		sort.Slice(week.Maimais[:], func(i, j int) bool {
 			return week.Maimais[i].Time.After(week.Maimais[j].Time)
 		})
+		cw, _ := strconv.Atoi(filepath.Base(w)[3:])
+		votes, err := getVoteResults(cw, baseDir)
+		if err == nil {
+			week.Votes = votes
+		} else {
+			log.Println(err)
+		}
 
 		weeks[i] = *week
 	}
@@ -83,13 +98,6 @@ func getMaiMaiPerCW(pathPrefix string, w string) (*Week, error) {
 					Href: filepath.Join(pathPrefix, filepath.Base(w), img.Name()),
 					Time: img.ModTime()})
 				break
-			case "html":
-				abs := filepath.Join(w, img.Name())
-				content, err := ioutil.ReadFile(abs)
-				if err != nil {
-					return nil, err
-				}
-				week.Result = string(content)
 			}
 		}
 	}
@@ -120,6 +128,68 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/favicon.ico")
 }
 
+func sortVotes(votes map[string]int) []Vote {
+	type kv struct {
+		Key   string
+		Value int
+	}
+	var ss []kv
+	for k, v := range votes {
+		ss = append(ss, kv{k, v})
+	}
+	sort.Slice(ss, func(i, j int) bool {
+		return ss[i].Value > ss[j].Value
+	})
+	ranked := make([]string, len(votes))
+	for i, kv := range ss {
+		ranked[i] = kv.Key
+	}
+
+	votesList := make([]Vote, len(ranked))
+	for i, key := range ranked {
+		votesList[i] = Vote{
+			File:  key,
+			Votes: votes[key],
+		}
+	}
+	return votesList
+}
+
+func parseVotesFile(file io.Reader) ([]Vote, error) {
+	reader := csv.NewReader(file)
+	reader.Comma = ':'
+	reader.FieldsPerRecord = -1
+	lines, err := reader.ReadAll()
+	if err != nil {
+		return nil, err
+	}
+	votes := map[string]int{}
+	for _, line := range lines {
+		for _, maimai := range line[1:] {
+			if count, ok := votes[maimai]; ok {
+				votes[maimai] = count + 1
+			} else {
+				votes[maimai] = 1
+			}
+		}
+	}
+
+	return sortVotes(votes), nil
+}
+
+func getVoteResults(week int, baseDir string) ([]Vote, error) {
+	weekString := fmt.Sprintf("CW_%d", week)
+	voteFilePath := filepath.Join(baseDir, weekString, "votes.txt")
+	if _, err := os.Stat(voteFilePath); err == nil {
+		votesFile, err := os.Open(voteFilePath)
+		if err != nil {
+			return nil, err
+		}
+		return parseVotesFile(votesFile)
+	}
+	return nil, nil
+}
+
 func main() {
 	var directory = flag.String("dir", ".", "the maimai directory")
 	var port = flag.Int("port", 8080, "port to run on")
@@ -130,7 +200,7 @@ func main() {
 		"numvotes": func(maimais []Maimai) []int {
 			v := voteCount(len(maimais))
 			votes := make([]int, v)
-			for i, _ := range votes {
+			for i := range votes {
 				votes[i] = i
 			}
 			return votes
