@@ -40,7 +40,7 @@
         {{range $week_index, $bla := .}}
         <div class="week">
             <h2>Week {{.KW}}</h2>
-            {{if eq $week_index 0}}
+            {{if and (eq $week_index 0) $bla.CanVote}}
             <form action="/register_vote.php">
                 <table>
                     {{$votes := numvotes .Maimais}}

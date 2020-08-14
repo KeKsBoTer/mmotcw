@@ -29,6 +29,7 @@ type Week struct {
 	KW            int
 	IsCurrentWeek bool
 	Votes         []Vote
+	CanVote       bool
 }
 
 type Vote = struct {
@@ -38,6 +39,13 @@ type Vote = struct {
 
 func voteCount(i int) int {
 	return int(math.Sqrt(float64(i)) * 1.15)
+}
+
+func checkLock(name string, weekFolder string) bool {
+	fileName := fmt.Sprintf("%s.lock", name)
+	filePath := filepath.Join(weekFolder, fileName)
+	_, err := os.Stat(filePath)
+	return err == nil
 }
 
 func getMaimais(baseDir string, pathPrefix string) ([]Week, error) {
@@ -56,13 +64,16 @@ func getMaimais(baseDir string, pathPrefix string) ([]Week, error) {
 		sort.Slice(week.Maimais[:], func(i, j int) bool {
 			return week.Maimais[i].Time.After(week.Maimais[j].Time)
 		})
-		cw, _ := strconv.Atoi(filepath.Base(w)[3:])
-		votes, err := getVoteResults(cw, baseDir)
-		if err == nil {
-			week.Votes = votes
-		} else {
-			log.Println(err)
+		uploadLock := checkLock("upload", w)
+		if checkLock("vote", w) && uploadLock {
+			votes, err := getVoteResults(w)
+			if err == nil {
+				week.Votes = votes
+			} else {
+				log.Println(err)
+			}
 		}
+		week.CanVote = uploadLock
 
 		weeks[i] = *week
 	}
@@ -177,9 +188,8 @@ func parseVotesFile(file io.Reader) ([]Vote, error) {
 	return sortVotes(votes), nil
 }
 
-func getVoteResults(week int, baseDir string) ([]Vote, error) {
-	weekString := fmt.Sprintf("CW_%d", week)
-	voteFilePath := filepath.Join(baseDir, weekString, "votes.txt")
+func getVoteResults(weekDir string) ([]Vote, error) {
+	voteFilePath := filepath.Join(weekDir, "votes.txt")
 	if _, err := os.Stat(voteFilePath); err == nil {
 		votesFile, err := os.Open(voteFilePath)
 		if err != nil {
