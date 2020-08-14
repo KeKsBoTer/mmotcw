@@ -14,11 +14,14 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 type Maimai struct {
-	User  string
+	File  string
 	Href  string
 	Time  time.Time
 	Votes int
@@ -62,12 +65,10 @@ func getMaimais(baseDir string) ([]Week, error) {
 		if err != nil {
 			return nil, err
 		}
-		sort.Slice(week.Maimais[:], func(i, j int) bool {
-			return week.Maimais[i].Time.After(week.Maimais[j].Time)
-		})
 		uploadLock := checkLock("upload", w)
+		cw, _ := strconv.Atoi(filepath.Base(w)[3:])
 		if checkLock("vote", w) && uploadLock {
-			votes, err := getVoteResults(w)
+			votes, err := getVoteResults(w, cw)
 			if err == nil {
 				week.Votes = votes
 			} else {
@@ -106,21 +107,31 @@ func getMaiMaiPerCW(pathPrefix string, w string) (*Week, error) {
 				"gif",
 				"png":
 				week.Maimais = append(week.Maimais, Maimai{
-					User: img.Name(),
+					File: img.Name(),
 					Href: filepath.Join(pathPrefix, filepath.Base(w), img.Name()),
 					Time: img.ModTime()})
 				break
 			}
 		}
 	}
+	sort.Slice(week.Maimais[:], func(i, j int) bool {
+		return week.Maimais[i].Time.After(week.Maimais[j].Time)
+	})
 	return &week, nil
 }
 
 func index(template template.Template, directory string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		user, _, ok := r.BasicAuth()
+		if !ok {
+			w.Header().Set("WWW-Authenticate", `Basic realm="Geheimwort bitte"`)
+			w.WriteHeader(401)
+			w.Write([]byte("Unauthorised.\n"))
+			return
+		}
 		if r.URL.Path != "/" {
 			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("404 - not found"))
+			w.Write([]byte("404 page not found"))
 			return
 		}
 		maimais, err := getMaimais(directory)
@@ -128,7 +139,13 @@ func index(template template.Template, directory string) http.HandlerFunc {
 			log.Fatalln(err)
 			return
 		}
-		err = template.Execute(w, maimais)
+		err = template.Execute(w, struct {
+			Weeks []Week
+			User  string
+		}{
+			Weeks: maimais,
+			User:  user,
+		})
 		if err != nil {
 			fmt.Println(err)
 			return
@@ -189,7 +206,7 @@ func parseVotesFile(file io.Reader) ([]Vote, error) {
 	return sortVotes(votes), nil
 }
 
-func getVoteResults(weekDir string) ([]Vote, error) {
+func getVoteResults(weekDir string, week int) ([]Vote, error) {
 	voteFilePath := filepath.Join(weekDir, "votes.txt")
 	if _, err := os.Stat(voteFilePath); err == nil {
 		votesFile, err := os.Open(voteFilePath)
@@ -201,11 +218,78 @@ func getVoteResults(weekDir string) ([]Vote, error) {
 			return nil, err
 		}
 		for i, v := range votes {
-			votes[i].Path = filepath.Join(weekDir, v.FileName)
+			weekString := fmt.Sprintf("CW_%d", week)
+			votes[i].Path = filepath.Join("mm", weekString, v.FileName)
 		}
 		return votes, nil
 	}
 	return nil, nil
+}
+
+func userContent(template template.Template, directory string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user := mux.Vars(r)["user"]
+		weeks, err := getMaimais(directory)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - server ist kaputt"))
+		}
+		empty := true
+		for w := range weeks {
+			filtered := []Maimai{}
+			for _, m := range weeks[w].Maimais {
+				creator := strings.ToLower(strings.Trim(strings.Split(m.File, ".")[0], "_0123456789"))
+				if creator == user {
+					filtered = append(filtered, m)
+					empty = false
+				}
+			}
+			weeks[w].Maimais = filtered
+			weeks[w].CanVote = false
+			weeks[w].Votes = nil
+		}
+		if empty {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("404 page not found"))
+			return
+		}
+
+		err = template.Execute(w, struct {
+			Weeks []Week
+			User  string
+		}{
+			Weeks: weeks,
+			User:  user,
+		})
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
+}
+
+func week(template template.Template, directory string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		week := mux.Vars(r)["week"]
+		cwPath := filepath.Join(directory, "CW_"+week)
+		maimais, err := getMaiMaiPerCW("mm", cwPath)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("500 - server ist kaputt"))
+		}
+
+		err = template.Execute(w, struct {
+			Maimais Week
+			Week    string
+		}{
+			Maimais: *maimais,
+			Week:    week,
+		})
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+	}
 }
 
 func main() {
@@ -225,17 +309,26 @@ func main() {
 	}
 
 	tmpl := template.Must(template.New("index.html").Funcs(funcMap).ParseFiles("templates/index.html"))
+	userTmpl := template.Must(template.New("user.html").Funcs(funcMap).ParseFiles("templates/user.html"))
+	weekTmpl := template.Must(template.New("week.html").Funcs(funcMap).ParseFiles("templates/week.html"))
 
-	http.HandleFunc("/favicon.ico", faviconHandler)
+	r := mux.NewRouter()
+	r.HandleFunc("/favicon.ico", faviconHandler)
 
 	fs := http.FileServer(http.Dir("./static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
 	// file server for maimais
 	fsMaimais := http.FileServer(http.Dir(*directory))
-	http.Handle("/mm/", http.StripPrefix("/mm/", fsMaimais))
+	r.PathPrefix("/mm/").Handler(http.StripPrefix("/mm/", fsMaimais))
 
-	http.HandleFunc("/", index(*tmpl, *directory))
+	r.HandleFunc("/", index(*tmpl, *directory))
+
+	r.HandleFunc("/{user:[a-z]+}", userContent(*userTmpl, *directory))
+
+	r.HandleFunc("/CW_{week:[0-9]+}", week(*weekTmpl, *directory))
+
+	http.Handle("/", r)
 
 	if err := http.ListenAndServe(":"+strconv.Itoa(*port), nil); err != nil {
 		log.Fatalln(err)
