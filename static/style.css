@@ -1,5 +1,5 @@
 body {
-	font-family: "Courier New", Courier, monospace;
+	font-family: 'Courier New', Courier, monospace;
 	max-width: 700px;
 	margin: 0 auto;
 	padding: 0 20px;
@@ -17,11 +17,11 @@ header {
 	background-color: rgb(86, 85, 97);
 }
 
-input[type="submit"] {
+input[type='submit'] {
 	font-size: 14px;
 	border-radius: 5px;
 	overflow: hidden;
-	font-family: "Courier New", Courier, monospace;
+	font-family: 'Courier New', Courier, monospace;
 	padding: 5px 7px;
 	background-color: transparent;
 	border: 1px solid white;
@@ -54,17 +54,17 @@ main {
 	margin: 3px;
 }
 
-.results .votesTable{
+.results .votesTable {
 	margin: 5px;
 	width: 100%;
 }
 
 .results .votesTable th:first-child,
-.results .votesTable td:first-child{
+.results .votesTable td:first-child {
 	text-align: center;
 }
 .results .votesTable th:last-child,
-.results .votesTable td:last-child{
+.results .votesTable td:last-child {
 	text-align: left;
 }
 
@@ -98,7 +98,7 @@ p {
 	align-content: stretch;
 }
 
-@media screen and (max-width:720px){
+@media screen and (max-width: 720px) {
 	.maimais {
 		display: flex;
 		flex-wrap: wrap;
@@ -142,13 +142,10 @@ p {
 	justify-content: space-between;
 }
 
-.navigate > div {
+.navigate > a {
 	width: 100px;
 	padding: 5px;
 	text-align: center;
-}
-.navigate > div:hover {
-	cursor: pointer;
 }
 
 .card {
@@ -157,12 +154,12 @@ p {
 	border: 0.5px dashed grey;
 }
 
-.weekLink{
+a {
 	text-decoration: none;
 	color: white;
 }
 
-.weekLink:hover {
+a:hover {
 	cursor: pointer;
 	text-decoration: underline dashed;
 }

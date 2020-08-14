@@ -11,6 +11,15 @@
 </head>
 
 <body>
+    <div class="navigate">
+        <a class="card" id="prev"  href="CW_{{add .Maimais.KW  -1 }}">
+           < {{add .Maimais.KW -1}} 
+        </a>
+        <a class="card" href='/'>Übersicht</a>
+        <a id="next" class="card" href="CW_{{add .Maimais.KW  1 }}">
+            {{add .Maimais.KW 1}}  >
+        </a>
+    </div>
     <header>
         <h1>Corona Week {{.Week}}</h1>
     </header>

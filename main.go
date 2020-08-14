@@ -45,6 +45,8 @@ func voteCount(i int) int {
 	return int(math.Sqrt(float64(i)) * 1.15)
 }
 
+
+
 func checkLock(name string, weekFolder string) bool {
 	fileName := fmt.Sprintf("%s.lock", name)
 	filePath := filepath.Join(weekFolder, fileName)
@@ -305,6 +307,9 @@ func main() {
 				votes[i] = i
 			}
 			return votes
+		},
+		"add": func(a , b int) int {
+			return a+b
 		},
 	}
 
