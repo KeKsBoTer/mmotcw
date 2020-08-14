@@ -124,13 +124,7 @@ func getMaiMaiPerCW(pathPrefix string, w string) (*Week, error) {
 
 func index(template template.Template, directory string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user, _, ok := r.BasicAuth()
-		if !ok {
-			w.Header().Set("WWW-Authenticate", `Basic realm="Geheimwort bitte"`)
-			w.WriteHeader(401)
-			w.Write([]byte("Unauthorised.\n"))
-			return
-		}
+		user, _, _ := r.BasicAuth()
 		if r.URL.Path != "/" {
 			w.WriteHeader(http.StatusNotFound)
 			w.Write([]byte("404 page not found"))
@@ -274,6 +268,11 @@ func week(template template.Template, directory string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		week := mux.Vars(r)["week"]
 		cwPath := filepath.Join(directory, "CW_"+week)
+		if _, err := os.Stat(cwPath); err != nil {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("404 - guck wo anders hin"))
+			return
+		}
 		maimais, err := getMaiMaiPerCW("mm", cwPath)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
