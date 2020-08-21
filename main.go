@@ -45,8 +45,6 @@ func voteCount(i int) int {
 	return int(math.Sqrt(float64(i)) * 1.15)
 }
 
-
-
 func checkLock(name string, weekFolder string) bool {
 	fileName := fmt.Sprintf("%s.lock", name)
 	filePath := filepath.Join(weekFolder, fileName)
@@ -68,8 +66,9 @@ func getMaimais(baseDir string) ([]Week, error) {
 			return nil, err
 		}
 		uploadLock := checkLock("upload", w)
+		voteLock := checkLock("vote", w)
 		cw, _ := strconv.Atoi(filepath.Base(w)[3:])
-		if checkLock("vote", w) && uploadLock {
+		if voteLock && uploadLock {
 			votes, err := getVoteResults(w, cw)
 			if err == nil {
 				week.Votes = votes
@@ -77,7 +76,7 @@ func getMaimais(baseDir string) ([]Week, error) {
 				log.Println(err)
 			}
 		}
-		week.CanVote = uploadLock
+		week.CanVote = uploadLock && !voteLock
 
 		weeks[i] = *week
 	}
@@ -307,8 +306,8 @@ func main() {
 			}
 			return votes
 		},
-		"add": func(a , b int) int {
-			return a+b
+		"add": func(a, b int) int {
+			return a + b
 		},
 	}
 
