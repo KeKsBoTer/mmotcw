@@ -17,8 +17,11 @@ header {
 	background-color: rgb(86, 85, 97);
 }
 
+#wolken {
+        float: right;
+}
+
 input[type='submit'] {
-	font-size: 14px;
 	border-radius: 5px;
 	overflow: hidden;
 	font-family: 'Courier New', Courier, monospace;
