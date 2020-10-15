@@ -19,9 +19,9 @@
     <main>
         <div class="uploader">
             <form action="/upload/upload.php" method="post" enctype="multipart/form-data">
-                Maimai pfostieren:
+                <h2>Maimai pfostieren</h2>
                 <input type="file" name="fileToUpload" id="fileToUpload">
-                <input type="submit" value="In die Wolken schicken" name="submit">
+                <input type="submit" id="wolken" value="In die Wolken schicken" name="submit">
             </form>
         </div>
         {{range $week_index, $bla := .Weeks}}
