@@ -74,7 +74,6 @@ func getMaimais(baseDir string) ([]Week, error) {
 
 		if err == nil && len(templateFiles) > 0 {
 			week.Template = filepath.Join("mm", filepath.Base(w), filepath.Base(templateFiles[0]))
-			fmt.Printf("found template %s for week %s\n", week.Template, w)
 		}
 
 		cw, _ := strconv.Atoi(filepath.Base(w)[3:])
