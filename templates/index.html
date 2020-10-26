@@ -88,6 +88,15 @@
                 </div>
                 {{end}}
 
+                {{if .Template}}
+                <div class="template card">
+                    <h1>Template</h1>
+                    <div>
+                        <img src="{{.Template}}">
+                    </div>
+                </div>
+                {{end}}
+
                 {{range .Maimais}}
                 <div class="meme card">
                     <p>{{.File}}</p>

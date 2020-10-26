@@ -33,9 +33,11 @@ type Week struct {
 	IsCurrentWeek bool
 	Votes         []Vote
 	CanVote       bool
+	// template file name
+	Template string
 }
 
-type Vote = struct {
+type Vote struct {
 	FileName string
 	Votes    int
 	Path     string
@@ -67,6 +69,14 @@ func getMaimais(baseDir string) ([]Week, error) {
 		}
 		uploadLock := checkLock("upload", w)
 		voteLock := checkLock("vote", w)
+
+		templateFiles, err := filepath.Glob(filepath.Join(w, "template.*"))
+
+		if err == nil && len(templateFiles) > 0 {
+			week.Template = filepath.Join("mm", filepath.Base(w), filepath.Base(templateFiles[0]))
+			fmt.Printf("found template %s for week %s\n", week.Template, w)
+		}
+
 		cw, _ := strconv.Atoi(filepath.Base(w)[3:])
 		if voteLock && uploadLock {
 			votes, err := getVoteResults(w, cw)
@@ -107,10 +117,12 @@ func getMaiMaiPerCW(pathPrefix string, w string) (*Week, error) {
 				"jpeg",
 				"gif",
 				"png":
-				week.Maimais = append(week.Maimais, Maimai{
-					File: img.Name(),
-					Href: filepath.Join(pathPrefix, filepath.Base(w), img.Name()),
-					Time: img.ModTime()})
+				if !strings.HasPrefix(img.Name(), "template.") {
+					week.Maimais = append(week.Maimais, Maimai{
+						File: img.Name(),
+						Href: filepath.Join(pathPrefix, filepath.Base(w), img.Name()),
+						Time: img.ModTime()})
+				}
 				break
 			}
 		}
