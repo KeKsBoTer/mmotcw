@@ -165,3 +165,16 @@ a:hover {
 	cursor: pointer;
 	text-decoration: underline dashed;
 }
+
+.card.template{
+	margin-bottom: 20px;
+	box-shadow: 0 5px 20px rgba(230, 182, 79, 0.7);
+}
+.card.template h1{
+	font-size: 16px;
+	color: white;
+	background-color: rgb(41, 40, 54);
+	padding: 3px 7px;
+	border-radius: 3px;
+	margin: 3px;
+}
