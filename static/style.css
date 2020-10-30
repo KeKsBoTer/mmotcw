@@ -30,10 +30,15 @@ input[type='submit'] {
 	border: 1px solid white;
 	color: white;
 }
+
 .uploader form {
 	padding: 10px;
 	font-weight: b;
 	margin-bottom: 0;
+}
+
+.uploader form h2{
+	margin-top: 0;
 }
 
 main {
