@@ -1,10 +1,17 @@
 package main
 
 import (
+	"bytes"
+	"encoding/base64"
 	"encoding/csv"
 	"flag"
 	"fmt"
 	"html/template"
+	"image"
+	_ "image/gif"
+	"image/jpeg"
+	_ "image/jpeg"
+	_ "image/png"
 	"io"
 	"io/ioutil"
 	"log"
@@ -18,13 +25,16 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/nfnt/resize"
 )
 
 type Maimai struct {
-	File  string
-	Href  string
-	Time  time.Time
-	Votes int
+	File      string
+	Href      string
+	Time      time.Time
+	Votes     int
+	ImageSize image.Point
+	Preview   string
 }
 
 type Week struct {
@@ -95,6 +105,13 @@ func getMaimais(baseDir string) ([]Week, error) {
 	return weeks, nil
 }
 
+type CachedImage struct {
+	Size    image.Point
+	Preview string
+}
+
+var imgCache = map[string]CachedImage{}
+
 func getMaiMaiPerCW(pathPrefix string, w string) (*Week, error) {
 	cw, err := strconv.Atoi(filepath.Base(w)[3:])
 	if err != nil {
@@ -117,10 +134,43 @@ func getMaiMaiPerCW(pathPrefix string, w string) (*Week, error) {
 				"gif",
 				"png":
 				if !strings.HasPrefix(img.Name(), "template.") {
+					imgPath := filepath.Join(w, img.Name())
+					var cachedImage CachedImage
+					if cache, ok := imgCache[imgPath]; ok {
+						cachedImage = cache
+					} else {
+						cachedImage = CachedImage{
+							Size:    image.Point{330, 330},
+							Preview: "",
+						}
+						if imgFile, err := os.OpenFile(imgPath, os.O_RDONLY, os.ModePerm); err == nil {
+							img, _, err := image.Decode(imgFile)
+							if err == nil {
+								ratio := float32(img.Bounds().Size().Y) / float32(img.Bounds().Size().X)
+								cachedImage.Size.Y = int(ratio * float32(cachedImage.Size.X))
+
+								// create smal image preview
+								smallImage := resize.Resize(20, uint(ratio*20), img, resize.Lanczos3)
+								buffer := bytes.NewBuffer([]byte{})
+								if err := jpeg.Encode(buffer, smallImage, nil); err != nil {
+									log.Println("ERROR:", err)
+								}
+								cachedImage.Preview = base64.RawStdEncoding.EncodeToString(buffer.Bytes())
+								imgCache[imgPath] = cachedImage
+							} else {
+								log.Println("ERROR:", err)
+							}
+						} else {
+							log.Println("ERROR:", err)
+						}
+					}
 					week.Maimais = append(week.Maimais, Maimai{
-						File: img.Name(),
-						Href: filepath.Join(pathPrefix, filepath.Base(w), img.Name()),
-						Time: img.ModTime()})
+						File:      img.Name(),
+						Href:      filepath.Join(pathPrefix, filepath.Base(w), img.Name()),
+						Time:      img.ModTime(),
+						ImageSize: cachedImage.Size,
+						Preview:   cachedImage.Preview,
+					})
 				}
 				break
 			}

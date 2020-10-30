@@ -14,7 +14,9 @@
     <header>
         <h1>MMOTCW</h1>
         <small>Maimai of the corona week</small>
-        <a href="{{.User}}" style="color: pink;"><p>Meine Seite</p></a>
+        <a href="{{.User}}" style="color: pink;">
+            <p>Meine Seite</p>
+        </a>
     </header>
     <main>
         <div class="uploader">
@@ -26,7 +28,9 @@
         </div>
         {{range $week_index, $bla := .Weeks}}
         <div class="week">
-            <a href="CW_{{.KW}}" class="weekLink"><h2>Week {{.KW}}</h2></a>
+            <a href="CW_{{.KW}}" class="weekLink">
+                <h2>Week {{.KW}}</h2>
+            </a>
             {{if and (eq $week_index 0) $bla.CanVote}}
             <form action="/register_vote.php">
                 <table>
@@ -101,7 +105,9 @@
                 <div class="meme card">
                     <p>{{.File}}</p>
                     <a href="{{.Href}}" target="_blank" rel="noopener noreferrer">
-                        <img src="{{.Href}}" loading="lazy" />
+                        <img src="{{.Href}}"
+                            style="height: {{.ImageSize.Y}}px; background-image:url('data:image/jpg;base64,{{.Preview}}');background-size: cover;"
+                            loading="lazy" />
                     </a>
                 </div>
                 {{end}}
