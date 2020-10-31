@@ -185,11 +185,11 @@ func getMaiMaiPerCW(pathPrefix string, w string) (*Week, error) {
 func index(template template.Template, directory string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, _, _ := r.BasicAuth()
-		if r.URL.Path != "/" {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("404 page not found"))
-			return
-		}
+		// if r.URL.Path != "/" {
+		// 	w.WriteHeader(http.StatusNotFound)
+		// 	w.Write([]byte("404 page not found"))
+		// 	return
+		// }
 		maimais, err := getMaimais(directory)
 		if err != nil {
 			log.Fatalln(err)
