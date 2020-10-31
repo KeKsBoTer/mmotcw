@@ -103,12 +103,12 @@
 
                 {{range .Maimais}}
                 <div class="meme card">
-                    <p>{{.File}}</p>
                     <a href="{{.Href}}" target="_blank" rel="noopener noreferrer">
-                        <img src="{{.Href}}"
-                            style="height: {{.ImageSize.Y}}px; background-image:url('data:image/jpg;base64,{{.Preview}}');background-size: cover;"
+                        <img src="{{.Href}}" class="maimai"
+                            style="height: {{.ImageSize.Y}}px; background-image:url('data:image/jpg;base64,{{.Preview}}');background-size: cover;filter:blur(10px)"
                             loading="lazy" />
                     </a>
+                    <p>{{.File}}</p>
                 </div>
                 {{end}}
             </div>
@@ -127,6 +127,20 @@
                 mainAudio: 'static/sound/elevator.mp3',
                 endAudio: 'static/sound/ding.mp3'
             });
+            for (var img of document.getElementsByClassName('maimai')) {
+                if (img.complete) {
+                    img.style.removeProperty("background")
+                    img.style.removeProperty("height")
+                    img.style.removeProperty("filter")
+                } else {
+                    img.addEventListener('load', (evt) => {
+                        evt.target.style.removeProperty("background")
+                        evt.target.style.removeProperty("height")
+                        evt.target.style.removeProperty("filter")
+                    })
+                }
+            }
+
         }
     </script>
 </body>
