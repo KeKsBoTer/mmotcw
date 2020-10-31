@@ -394,6 +394,7 @@ func main() {
 
 	http.Handle("/", r)
 
+	log.Println("starting webserver on port", *port)
 	if err := http.ListenAndServe(":"+strconv.Itoa(*port), nil); err != nil {
 		log.Fatalln(err)
 	}

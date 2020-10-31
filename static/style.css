@@ -127,10 +127,9 @@ p {
 }
 
 .week img {
-	min-width: 300px;
 	background-color: lightgray;
 	overflow: hidden;
-	max-width: 330px;
+	width: 330px;
 }
 
 .meme p {
