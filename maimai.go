@@ -12,5 +12,5 @@ type Maimai struct {
 	Time      time.Time
 	Votes     int
 	ImageSize image.Point
-	Preview   string
+	Preview   Base64String
 }

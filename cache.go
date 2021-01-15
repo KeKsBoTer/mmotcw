@@ -49,7 +49,6 @@ func (c PreviewCache) cacheImage(imgPath string) error {
 		}
 
 		cachedImage.Size.Y = int(ratio * float32(cachedImage.Size.X))
-
 		// create smal image preview
 		smallImage := resize.Resize(20, uint(ratio*20), img, resize.Lanczos3)
 		buffer := bytes.NewBuffer([]byte{})
