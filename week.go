@@ -28,7 +28,6 @@ func (w *Week) SortMaimais() {
 }
 
 func getMaiMaiPerCW(pathPrefix string, w string) (*Week, error) {
-	w = filepath.Join(pathPrefix, w)
 	cw, err := CWFromPath(w)
 	if err != nil {
 		return nil, err
@@ -44,7 +43,7 @@ func getMaiMaiPerCW(pathPrefix string, w string) (*Week, error) {
 	for _, img := range imgFiles {
 		if !strings.HasPrefix(img.Name(), "template.") {
 			imgPath := cw.ImagePath(img.Name())
-			cachedImage, err := ImgCache.GetImage(imgPath)
+			cachedImage, err := ImgCache.GetImage(filepath.Join(w, img.Name()))
 			if err != nil {
 				log.Error(err)
 				continue
@@ -54,7 +53,7 @@ func getMaiMaiPerCW(pathPrefix string, w string) (*Week, error) {
 				Href:      filepath.Join(pathPrefix, imgPath),
 				Time:      img.ModTime(),
 				ImageSize: cachedImage.Size,
-				Preview:   string(cachedImage.Preview),
+				Preview:   cachedImage.Preview,
 			})
 		}
 	}

@@ -105,7 +105,9 @@
                 <div class="meme card">
                     <a href="{{.Href}}" target="_blank" rel="noopener noreferrer">
                         <img src="{{.Href}}" class="maimai"
-                            style="height: {{.ImageSize.Y}}px; background-image:url('data:image/jpg;base64,{{.Preview}}');background-size: cover;filter:blur(10px)"
+                            height="{{.ImageSize.Y}}"
+                            width="{{.ImageSize.X}}"
+                            style="background-image: url('data:image/jpg;base64,{{.Preview}}')"
                             loading="lazy" />
                     </a>
                     <p>{{.File}}</p>

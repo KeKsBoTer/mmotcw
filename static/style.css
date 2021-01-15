@@ -130,6 +130,10 @@ p {
 	background-color: lightgray;
 	overflow: hidden;
 	width: 330px;
+	background-size: cover;
+	height: attr("height" px);
+	width:attr("width" px);
+	filter:blur(10px);
 }
 
 .meme p {
