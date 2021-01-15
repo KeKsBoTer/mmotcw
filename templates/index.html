@@ -28,8 +28,8 @@
         </div>
         {{range $week_index, $bla := .Weeks}}
         <div class="week">
-            <a href="CW_{{.KW}}" class="weekLink">
-                <h2>Week {{.KW}}</h2>
+            <a href="{{formatCW .CW.Week}}" class="weekLink">
+                <h2>Week {{.CW.Week}}</h2>
             </a>
             {{if and (eq $week_index 0) $bla.CanVote}}
             <form action="/register_vote.php">
@@ -73,14 +73,14 @@
             <div class="maimais">
                 {{if .Votes }}
                 <div class="results card">
-                    <h1>Ergebnisse CW_{{.KW}}</h1>
+                    <h1>Ergebnisse  {{formatCW .CW.Week}}</h1>
                     <table class="votesTable">
                         <tbody>
                             <tr>
                                 <th>Votes</th>
                                 <th>MaiMai</th>
                             </tr>
-                            {{$KW := .KW}}
+                            {{$KW := .CW.Week}}
                             {{range $index, $vote := .Votes}}
                             <tr>
                                 <td>{{$vote.Votes}}</td>
