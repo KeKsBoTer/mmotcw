@@ -13,7 +13,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/gorilla/mux"
 	logger "github.com/withmandala/go-log"
@@ -25,59 +24,32 @@ func init() {
 	log = logger.New(os.Stdout).WithColor()
 }
 
-func getMaimais(baseDir string) ([]Week, error) {
-	weekFolders, err := filepath.Glob(filepath.Join(baseDir, "CW_*"))
+// GetMaimais returns all maiamis for a given year structured in weeks
+func GetMaimais(source MaimaiSource, year int) ([]Week, error) {
+	weekFolders, err := filepath.Glob(filepath.Join(string(source), strconv.Itoa(year), "CW_*"))
 	if err != nil {
 		return nil, err
 	}
 	weeks := make([]Week, len(weekFolders))
 	for i, w := range weekFolders {
-
-		week, err := getMaiMaiPerCW("mm", w)
-
+		week, err := ReadWeek(w)
 		if err != nil {
 			return nil, err
 		}
-		uploadLock := CheckLock("upload", w)
-		voteLock := CheckLock("vote", w)
-
-		templateFiles, err := filepath.Glob(filepath.Join(w, "template.*"))
-
-		if err == nil && len(templateFiles) > 0 {
-			week.Template = filepath.Join("mm", filepath.Base(w), filepath.Base(templateFiles[0]))
-		}
-
-		cw, _ := strconv.Atoi(filepath.Base(w)[3:])
-		if voteLock && uploadLock {
-			votes, err := getVoteResults(w, cw)
-			if err == nil {
-				week.Votes = votes
-			} else {
-				log.Error(err)
-			}
-		}
-		week.CanVote = uploadLock && !voteLock
-
 		weeks[i] = *week
 	}
+	// sort weeks
 	sort.Slice(weeks[:], func(i, j int) bool {
 		return weeks[j].CW.Before(weeks[i].CW)
 	})
 	return weeks, nil
 }
 
-func index(template template.Template, directory string) http.HandlerFunc {
+func index(template template.Template, source MaimaiSource) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, _, _ := r.BasicAuth()
-		var year int
-		// change year if year is given
-		if y, ok := mux.Vars(r)["year"]; ok {
-			yy, _ := strconv.Atoi(y)
-			year = yy
-		} else {
-			year = time.Now().Year()
-		}
-		maimais, err := getMaimais(filepath.Join(directory, strconv.Itoa(year)))
+		year := getYear(r)
+		maimais, err := GetMaimais(source, year)
 		if err != nil {
 			log.Error(err)
 			return
@@ -96,13 +68,15 @@ func index(template template.Template, directory string) http.HandlerFunc {
 	}
 }
 
-func userContent(template template.Template, directory string) http.HandlerFunc {
+func userContent(template template.Template, source MaimaiSource) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user := mux.Vars(r)["user"]
-		weeks, err := getMaimais(directory)
+		year := getYear(r)
+		weeks, err := GetMaimais(source, year)
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("500 - server ist kaputt"))
+			httpError(w, http.StatusInternalServerError)
+			log.Error(err)
+			return
 		}
 		empty := true
 		for w := range weeks {
@@ -115,12 +89,9 @@ func userContent(template template.Template, directory string) http.HandlerFunc 
 				}
 			}
 			weeks[w].Maimais = filtered
-			weeks[w].CanVote = false
-			weeks[w].Votes = nil
 		}
 		if empty {
-			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("404 page not found"))
+			httpError(w, http.StatusNotFound)
 			return
 		}
 
@@ -138,28 +109,15 @@ func userContent(template template.Template, directory string) http.HandlerFunc 
 	}
 }
 
-func week(template template.Template, directory string) http.HandlerFunc {
+func week(template template.Template, source MaimaiSource) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		week, _ := strconv.Atoi(mux.Vars(r)["week"])
 
-		// get year or use default (current year)
-		var year int
-		y, ok := r.URL.Query()["year"]
-		if !ok || len(y[0]) < 1 {
-			year = time.Now().Year()
-		} else if yy, err := strconv.Atoi(y[0]); err == nil {
-			year = yy
-		} else {
-			year = time.Now().Year()
-		}
+		year := getYear(r)
 
-		cwPath := filepath.Join(directory, strconv.Itoa(year), fmt.Sprintf("CW_%02d", week))
-		if _, err := os.Stat(cwPath); err != nil {
-			httpError(w, http.StatusNotFound)
-			return
-		}
-		maimais, err := getMaiMaiPerCW("mm", cwPath)
+		maimais, err := source.GetMaimaisForCW(CW{Year: year, Week: week})
 		if err != nil {
+			log.Error(err)
 			httpError(w, http.StatusInternalServerError)
 			return
 		}
@@ -182,7 +140,7 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/favicon.ico")
 }
 
-func createRouter(templates *template.Template, maimaiDir string) *mux.Router {
+func createRouter(templates *template.Template, source MaimaiSource) *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/favicon.ico", faviconHandler)
 
@@ -190,14 +148,14 @@ func createRouter(templates *template.Template, maimaiDir string) *mux.Router {
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
 	// file server for maimais
-	fsMaimais := http.FileServer(http.Dir(maimaiDir))
+	fsMaimais := http.FileServer(http.Dir(string(source)))
 	r.PathPrefix("/mm/").Handler(http.StripPrefix("/mm/", fsMaimais))
 
-	r.HandleFunc("/", index(*templates.Lookup("index.html"), maimaiDir))
+	r.HandleFunc("/", index(*templates.Lookup("index.html"), source))
 
-	r.HandleFunc("/{user:[a-z]+}", userContent(*templates.Lookup("user.html"), maimaiDir))
+	r.HandleFunc("/{user:[a-z]+}", userContent(*templates.Lookup("user.html"), source))
 
-	r.HandleFunc("/CW_{week:[0-9]+}", week(*templates.Lookup("week.html"), maimaiDir))
+	r.HandleFunc("/CW_{week:[0-9]+}", week(*templates.Lookup("week.html"), source))
 
 	return r
 }
@@ -227,6 +185,9 @@ func loadTemplates(dir string) *template.Template {
 		"formatCW": func(cw int) string {
 			return fmt.Sprintf("CW_%02d", cw)
 		},
+		"pathPrefix": func(s string) string {
+			return filepath.Join("mm", s)
+		},
 	}
 
 	return template.Must(template.New("templates").Funcs(funcMap).ParseGlob(filepath.Join(dir, "*.html")))
@@ -236,9 +197,12 @@ func loadTemplates(dir string) *template.Template {
 func main() {
 	miamaiDir, port := readFlags()
 
+	ImgCache.dir = miamaiDir
+
 	templates := loadTemplates("./templates")
 
-	router := createRouter(templates, miamaiDir)
+	source := MaimaiSource(miamaiDir)
+	router := createRouter(templates, source)
 	http.Handle("/", router)
 
 	log.Info("starting webserver on port", port)

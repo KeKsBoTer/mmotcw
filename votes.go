@@ -2,11 +2,8 @@ package main
 
 import (
 	"encoding/csv"
-	"fmt"
 	"io"
 	"math"
-	"os"
-	"path/filepath"
 	"sort"
 )
 
@@ -69,24 +66,4 @@ func parseVotesFile(file io.Reader) ([]Vote, error) {
 	}
 
 	return sortVotes(votes), nil
-}
-
-func getVoteResults(weekDir string, week int) ([]Vote, error) {
-	voteFilePath := filepath.Join(weekDir, "votes.txt")
-	if _, err := os.Stat(voteFilePath); err == nil {
-		votesFile, err := os.Open(voteFilePath)
-		if err != nil {
-			return nil, err
-		}
-		votes, err := parseVotesFile(votesFile)
-		if err != nil {
-			return nil, err
-		}
-		for i, v := range votes {
-			weekString := fmt.Sprintf("CW_%d", week)
-			votes[i].Path = filepath.Join("mm", weekString, v.FileName)
-		}
-		return votes, nil
-	}
-	return nil, nil
 }

@@ -2,15 +2,6 @@ package main
 
 import "net/http"
 
-func error505(w http.ResponseWriter) {
-	w.WriteHeader(http.StatusInternalServerError)
-	w.Write([]byte("500 - server ist kaputt"))
-}
-func error404(w http.ResponseWriter) {
-	w.WriteHeader(http.StatusNotFound)
-	w.Write([]byte("404 - guck wo anders hin"))
-}
-
 func httpError(w http.ResponseWriter, code int) {
 	switch code {
 	case 505:

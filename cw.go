@@ -30,11 +30,11 @@ func CWFromPath(path string) (*CW, error) {
 
 }
 
-// ImagePath returns relative path for image
-func (c CW) ImagePath(imgName string) string {
+// Path returns path of CW e.g. 2020/CW_05
+func (c CW) Path() string {
 	year := strconv.Itoa(c.Year)
 	cw := fmt.Sprintf("CW_%02d", c.Week)
-	return filepath.Join(year, cw, imgName)
+	return filepath.Join(year, cw)
 }
 
 // Before checks if one calender week is before the other in time
