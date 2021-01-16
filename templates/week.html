@@ -12,12 +12,12 @@
 
 <body>
     <div class="navigate">
-        <a class="card" id="prev"  href="CW_{{add .Maimais.KW  -1 }}">
-           < {{add .Maimais.KW -1}} 
+        <a class="card" id="prev"  href="CW_{{add .Maimais.CW.Week  -1 }}">
+           < {{add .Maimais.CW.Week -1}} 
         </a>
         <a class="card" href='/'>Übersicht</a>
-        <a id="next" class="card" href="CW_{{add .Maimais.KW  1 }}">
-            {{add .Maimais.KW 1}}  >
+        <a id="next" class="card" href="CW_{{add .Maimais.CW.Week  1 }}">
+            {{add .Maimais.CW.Week 1}}  >
         </a>
     </div>
     <header>
@@ -49,8 +49,8 @@
                 {{range .Maimais.Maimais}}
                 <div class="meme card">
                     <p>{{.File}}</p>
-                    <a href="{{.Href}}" target="_blank" rel="noopener noreferrer">
-                        <img src="{{.Href}}" loading="lazy" />
+                    <a href="{{pathPrefix (.Href)}}"  target="_blank" rel="noopener noreferrer">
+                        <img src="{{pathPrefix (.Href)}}" loading="lazy" class="maimai"  />
                     </a>
                 </div>
                 {{end}}
@@ -69,6 +69,18 @@
                 mainAudio: 'static/sound/elevator.mp3',
                 endAudio: 'static/sound/ding.mp3'
             });
+            for (var img of document.getElementsByClassName('maimai')) {
+                if (img.complete) {
+                    img.style.setProperty("background-image","none")
+                    img.style.setProperty("filter","none")
+                } else {
+                    img.addEventListener('load', (evt) => {
+                        evt.target.style.setProperty("background-image","none")
+                        evt.target.style.setProperty("filter","none")
+                    })
+                }
+            }
+
         }
     </script>
 </body>

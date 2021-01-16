@@ -3,8 +3,13 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strconv"
+	"time"
+
+	"github.com/gorilla/mux"
 )
 
 // CheckLock checks whether a lock file with a given name exists in a directory
@@ -37,4 +42,20 @@ func GetImageFiles(folder string) ([]os.FileInfo, error) {
 		}
 	}
 	return images, nil
+}
+
+func getYear(r *http.Request) int {
+	// change year if year is given
+	if y, ok := mux.Vars(r)["year"]; ok {
+		yy, _ := strconv.Atoi(y)
+		return yy
+	}
+	y, ok := r.URL.Query()["year"]
+	if !ok || len(y[0]) < 1 {
+		return time.Now().Year()
+	}
+	if yy, err := strconv.Atoi(y[0]); err == nil {
+		return yy
+	}
+	return time.Now().Year()
 }

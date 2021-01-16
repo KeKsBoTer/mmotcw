@@ -18,74 +18,18 @@
     <main>
         {{range $week_index, $bla := .Weeks}}
         <div class="week">
-            <h2>Week {{.KW}}</h2>
-            {{if and (eq $week_index 0) $bla.CanVote}}
-            <form action="/register_vote.php">
-                <table>
-                    {{$votes := numvotes .Maimais}}
-                    {{range $i, $maimai := .Maimais}}
-                    {{if eq $i 0}}
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th colspan="{{len $votes}}">Stimme</th>
-                        </tr>
-                        <tr>
-                            <th>Maimai</th>
-                            {{range $votes}}
-                            <th>{{.}}</th>
-                            {{end}}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{end}}
-                        <tr>
-                            <td>{{.File}}</td>
-                            {{range $votes}}
-                            <td>
-                                <input type="radio" id="{{$maimai.File}}" name="vote_{{.}}" value="{{$maimai.File}}">
-                            </td>
-                            {{end}}
-                        </tr>
-                        {{end}}
-                        </tr>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td><input type="submit" value="Abstimmen!"></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </form>
-            {{end}}
+            <h2>Week {{.CW.Week}}</h2>
             <div class="maimais">
-                {{if .Votes }}
-                <div class="results card">
-                    <h1>Ergebnisse CW_{{.KW}}</h1>
-                    <table class="votesTable">
-                        <tbody>
-                            <tr>
-                                <th>Votes</th>
-                                <th>MaiMai</th>
-                            </tr>
-                            {{$KW := .KW}}
-                            {{range $index, $vote := .Votes}}
-                            <tr>
-                                <td>{{$vote.Votes}}</td>
-                                <td><a href="{{$vote.Path}}">{{$vote.FileName}}</a></td>
-                            </tr>
-                            {{end}}
-                        </tbody>
-                    </table>
-                </div>
-                {{end}}
-
                 {{range .Maimais}}
                 <div class="meme card">
-                    <p>{{.File}}</p>
-                    <a href="{{.Href}}" target="_blank" rel="noopener noreferrer">
-                        <img src="{{.Href}}" loading="lazy" />
+                    <a href="{{pathPrefix (.Href)}}" target="_blank" rel="noopener noreferrer">
+                        <img src="{{pathPrefix (.Href)}}" class="maimai"
+                            height="{{(.Preview).Size.Y}}"
+                            width="{{(.Preview).Size.X}}"
+                            style="background-image: url('data:image/jpg;base64,{{(.Preview).Image}}')"
+                            loading="lazy" />
                     </a>
+                    <p>{{.File}}</p>
                 </div>
                 {{end}}
             </div>
@@ -95,17 +39,7 @@
 
     <div class="elevator-button">Back to Top</div>
 
-    <script>
-        // Elevator script included on the page, already.
-
-        window.onload = function () {
-            var elevator = new Elevator({
-                element: document.querySelector('.elevator-button'),
-                mainAudio: 'static/sound/elevator.mp3',
-                endAudio: 'static/sound/ding.mp3'
-            });
-        }
-    </script>
+    <script src="static/script.js"></script>
 </body>
 
 </html>

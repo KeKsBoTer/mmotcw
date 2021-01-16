@@ -80,7 +80,6 @@
                                 <th>Votes</th>
                                 <th>MaiMai</th>
                             </tr>
-                            {{$KW := .CW.Week}}
                             {{range $index, $vote := .Votes}}
                             <tr>
                                 <td>{{$vote.Votes}}</td>
@@ -96,18 +95,18 @@
                 <div class="template card">
                     <h1>Template</h1>
                     <div>
-                        <img src="{{.Template}}">
+                        <img src="{{pathPrefix (.Template.Href)}}" class="maimai">
                     </div>
                 </div>
                 {{end}}
 
                 {{range .Maimais}}
                 <div class="meme card">
-                    <a href="{{.Href}}" target="_blank" rel="noopener noreferrer">
-                        <img src="{{.Href}}" class="maimai"
-                            height="{{.ImageSize.Y}}"
-                            width="{{.ImageSize.X}}"
-                            style="background-image: url('data:image/jpg;base64,{{.Preview}}')"
+                    <a href="{{pathPrefix (.Href)}}" target="_blank" rel="noopener noreferrer">
+                        <img src="{{pathPrefix (.Href)}}" class="maimai"
+                            height="{{(.Preview).Size.Y}}"
+                            width="{{(.Preview).Size.X}}"
+                            style="background-image: url('data:image/jpg;base64,{{(.Preview).Image}}')"
                             loading="lazy" />
                     </a>
                     <p>{{.File}}</p>
@@ -120,31 +119,7 @@
 
     <div class="elevator-button">Back to Top</div>
 
-    <script>
-        // Elevator script included on the page, already.
-
-        window.onload = function () {
-            var elevator = new Elevator({
-                element: document.querySelector('.elevator-button'),
-                mainAudio: 'static/sound/elevator.mp3',
-                endAudio: 'static/sound/ding.mp3'
-            });
-            for (var img of document.getElementsByClassName('maimai')) {
-                if (img.complete) {
-                    img.style.removeProperty("background")
-                    img.style.removeProperty("height")
-                    img.style.removeProperty("filter")
-                } else {
-                    img.addEventListener('load', (evt) => {
-                        evt.target.style.removeProperty("background")
-                        evt.target.style.removeProperty("height")
-                        evt.target.style.removeProperty("filter")
-                    })
-                }
-            }
-
-        }
-    </script>
+    <script src="static/script.js"></script>
 </body>
 
 </html>
