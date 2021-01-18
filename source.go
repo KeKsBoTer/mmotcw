@@ -50,7 +50,7 @@ func (m MaimaiSource) GetVoteResults(cw CW) ([]Vote, error) {
 			return nil, err
 		}
 		for i, v := range votes {
-			votes[i].Path = filepath.Join(string(m), cw.Path(), v.FileName)
+			votes[i].Path = filepath.Join(cw.Path(), v.FileName)
 		}
 		return votes, nil
 	}
