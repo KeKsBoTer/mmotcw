@@ -19,8 +19,14 @@ jobs:
         go-version: 1.15
 
     - name: Build
-      run: GOARCH=arm go build -ldflags="-s -w" -a -installsuffix nocgo -o dist/mmotcw .
+      run: |
+        GOARCH=arm go build -ldflags="-s -w" -a -installsuffix nocgo -o dist/mmotcw .
+        cp -r static dist/static
+        cp -r templates dist/templates
     
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
     - name: Deploy to Server
       uses: easingthemes/ssh-deploy@v2.1.5
       env:
