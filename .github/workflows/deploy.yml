@@ -23,11 +23,20 @@ jobs:
         GOARCH=arm go build -ldflags="-s -w" -a -installsuffix nocgo -o dist/mmotcw .
         cp -r static dist/static
         cp -r templates dist/templates
+        
+    - uses: actions/upload-artifact@master
+      with:
+        name: build
+        path: dist
     
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    steps:
+    steps: 
+    - uses: actions/download-artifact@master
+      with:
+        name: build
+        path: dist
     - name: Deploy to Server
       uses: easingthemes/ssh-deploy@v2.1.5
       env:
