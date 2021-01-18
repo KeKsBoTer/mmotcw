@@ -83,7 +83,7 @@
                             {{range $index, $vote := .Votes}}
                             <tr>
                                 <td>{{$vote.Votes}}</td>
-                                <td><a href="{{$vote.Path}}">{{$vote.FileName}}</a></td>
+                                <td><a href="{{pathPrefix ($vote.Path)}}">{{$vote.FileName}}</a></td>
                             </tr>
                             {{end}}
                         </tbody>
