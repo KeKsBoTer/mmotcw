@@ -25,6 +25,7 @@ jobs:
         cp -r templates dist/templates
     
   deploy:
+    needs: build
     runs-on: ubuntu-latest
     steps:
     - name: Deploy to Server
