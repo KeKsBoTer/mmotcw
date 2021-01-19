@@ -38,20 +38,18 @@ func (m MaimaiSource) GetMaimaisForCW(cw CW) (*Week, error) {
 }
 
 // GetVoteResults reads voting results from directory
-func (m MaimaiSource) GetVoteResults(cw CW) ([]Vote, error) {
+func (m MaimaiSource) GetVoteResults(cw CW) (UserVotes, error) {
 	voteFilePath := filepath.Join(string(m), cw.Path(), "votes.txt")
 	if _, err := os.Stat(voteFilePath); err == nil {
 		votesFile, err := os.Open(voteFilePath)
 		if err != nil {
 			return nil, err
 		}
-		votes, err := parseVotesFile(votesFile)
+		votes, err := ParseVotesFile(votesFile)
 		if err != nil {
 			return nil, err
 		}
-		for i, v := range votes {
-			votes[i].Path = filepath.Join(cw.Path(), v.FileName)
-		}
+
 		return votes, nil
 	}
 	return nil, nil

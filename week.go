@@ -7,10 +7,12 @@ import (
 
 // Week stores information about the maimais, votes etc. of a week
 type Week struct {
-	Maimais []Maimai
-	CW      CW
-	Votes   []Vote
-	CanVote bool
+	Maimais        []Maimai
+	CW             CW
+	Votes          Votes
+	UserVotes      UserVotes
+	CanVote        bool
+	FinishedVoting bool
 	// template file name
 	Template *Maimai
 }
@@ -38,14 +40,22 @@ func ReadWeek(directory string) (*Week, error) {
 	uploadLock := CheckLock("upload", directory)
 	voteLock := CheckLock("vote", directory)
 
-	if voteLock && uploadLock {
-		votes, err := source.GetVoteResults(*cw)
-		if err == nil {
-			week.Votes = votes
-		} else {
-			log.Error(err)
+	userVotes, err := source.GetVoteResults(*cw)
+
+	if err == nil {
+		week.UserVotes = userVotes
+		votes := userVotes.GetVotes()
+		for i, v := range votes {
+			votes[i].Path = filepath.Join(cw.Path(), v.FileName)
 		}
+		week.Votes = votes
+	} else {
+		log.Error(err)
+		week.UserVotes = UserVotes{}
+		week.Votes = Votes{}
 	}
+
 	week.CanVote = uploadLock && !voteLock
+	week.FinishedVoting = voteLock && uploadLock
 	return week, nil
 }
