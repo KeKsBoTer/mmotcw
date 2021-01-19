@@ -8,6 +8,7 @@
     <link rel="apple-touch-icon" href="favicon.ico">
 
     <script src="static/elevator.min.js"></script>
+    <script src="static/canvasjs.min.js"></script>
 </head>
 
 <body>
@@ -88,6 +89,11 @@
                             {{end}}
                         </tbody>
                     </table>
+                    <div class="chartContainer" 
+                        style="height: 280px; width: calc(100% - 20px); margin:10px;"
+                        data="{{toJson (.Votes)}}"
+                    >
+                    </div>
                 </div>
                 {{end}}
 

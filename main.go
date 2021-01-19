@@ -1,6 +1,8 @@
 package main
 
 import (
+	"encoding/base64"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"html/template"
@@ -188,6 +190,12 @@ func loadTemplates(dir string) *template.Template {
 		"pathPrefix": func(s string) string {
 			return filepath.Join("mm", s)
 		},
+		"toJson": func(i interface{}) string {
+			if b, err := json.Marshal(i); err == nil {
+				return base64.RawStdEncoding.EncodeToString(b)
+			}
+			return ""
+		},
 	}
 
 	return template.Must(template.New("templates").Funcs(funcMap).ParseGlob(filepath.Join(dir, "*.html")))
@@ -205,7 +213,7 @@ func main() {
 	router := createRouter(templates, source)
 	http.Handle("/", router)
 
-	log.Info("starting webserver on port", port)
+	log.Infof("starting webserver on http://localhost:%d", port)
 	if err := http.ListenAndServe(":"+strconv.Itoa(port), nil); err != nil {
 		log.Fatal(err)
 	}
