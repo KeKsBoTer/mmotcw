@@ -15,6 +15,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 	logger "github.com/withmandala/go-log"
@@ -138,6 +139,66 @@ func week(template template.Template, source MaimaiSource) http.HandlerFunc {
 	}
 }
 
+func vote(source MaimaiSource) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			httpError(w, http.StatusMethodNotAllowed)
+			return
+		}
+		year, week := time.Now().ISOWeek()
+		cw := CW{Year: year, Week: week}
+		if !CheckLock("upload", filepath.Join(string(source), cw.Path())) {
+			fmt.Fprint(w, `
+				<h1>Abstimmung noch nicht möglich!</h1>
+				<p>Sehr geehrte[r] Pfostierer:in!</p>
+				<p>Das Abstimmen ist Freitags ab 16:45 Uhr möglich.</p>
+			`)
+			return
+		}
+		if CheckLock("vote", filepath.Join(string(source), cw.Path())) {
+			fmt.Fprint(w, `
+				<h1>Abstimmung beendet!</h1>
+				<p>Sehr geehrte[r] Pfostierer:in!</p>
+				<p>Die Abstimmung ist bereits beendet.</p>
+			`)
+			return
+		}
+
+		user := mux.Vars(r)["user"]
+
+		err := r.ParseMultipartForm(0)
+		if err != nil {
+			log.Error(err)
+			httpError(w, http.StatusInternalServerError)
+			return
+		}
+		data := r.MultipartForm.Value
+		mm, _ := ReadWeek(filepath.Join(string(source), cw.Path()))
+		if len(data) != voteCount(len(mm.Maimais)) {
+			httpError(w, http.StatusBadRequest)
+			return
+		}
+		votes := make([]string, len(data))
+		for i := 0; i < len(data); i++ {
+			votes[i] = data[strconv.Itoa(i)][0]
+		}
+		mm.UserVotes.SetVotes(user, votes)
+
+		votesPath := filepath.Join(string(source), cw.Path(), "votes.txt")
+		file, err := os.Create(votesPath)
+		if err != nil {
+			httpError(w, http.StatusInternalServerError)
+			log.Error(err)
+			return
+		}
+		mm.UserVotes.WriteToFile(file)
+		file.Close()
+
+		w.Header().Add("Location", r.Header.Get("Referer"))
+		w.WriteHeader(http.StatusSeeOther)
+	}
+}
+
 func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/favicon.ico")
 }
@@ -154,6 +215,8 @@ func createRouter(templates *template.Template, source MaimaiSource) *mux.Router
 	r.PathPrefix("/mm/").Handler(http.StripPrefix("/mm/", fsMaimais))
 
 	r.HandleFunc("/", index(*templates.Lookup("index.html"), source))
+
+	r.HandleFunc("/vote", vote(source))
 
 	r.HandleFunc("/{user:[a-z]+}", userContent(*templates.Lookup("user.html"), source))
 
@@ -203,6 +266,10 @@ func loadTemplates(dir string) *template.Template {
 }
 
 func main() {
+	// enable debug
+	if os.Getenv("DEBUG") == "true" {
+		log = log.WithDebug()
+	}
 	miamaiDir, port := readFlags()
 
 	ImgCache.dir = miamaiDir

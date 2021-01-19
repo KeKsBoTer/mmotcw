@@ -1,18 +1,27 @@
 package main
 
-import "net/http"
+import (
+	"fmt"
+	"net/http"
+)
 
 func httpError(w http.ResponseWriter, code int) {
 	switch code {
-	case 505:
+	case http.StatusInternalServerError:
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("500 - server ist kaputt"))
+		fmt.Fprint(w, "500 - server ist kaputt")
 		return
-	case 404:
+	case http.StatusNotFound:
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("404 - guck wo anders hin"))
+		fmt.Fprint(w, "404 - guck wo anders hin")
+	case http.StatusMethodNotAllowed:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		fmt.Fprint(w, "hier wird nur gePOSTed!")
+	case http.StatusBadRequest:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		fmt.Fprint(w, "so kann ich nicht arbeiten")
 	default:
-		w.WriteHeader(500)
-		w.Write([]byte("Schiefer kanns nicht mehr laufen"))
+		w.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprint(w, "Schiefer kanns nicht mehr laufen")
 	}
 }

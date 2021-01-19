@@ -33,7 +33,7 @@
                 <h2>Week {{.CW.Week}}</h2>
             </a>
             {{if and (eq $week_index 0) $bla.CanVote}}
-            <form action="/register_vote.php">
+            <form action="/vote" method="post" enctype="multipart/form-data">
                 <table>
                     {{$votes := numvotes .Maimais}}
                     {{range $i, $maimai := .Maimais}}
@@ -56,7 +56,7 @@
                             <td>{{.File}}</td>
                             {{range $votes}}
                             <td>
-                                <input type="radio" id="{{$maimai.File}}" name="vote_{{.}}" value="{{$maimai.File}}">
+                                <input type="radio" id="{{$maimai.File}}" name="{{.}}" value="{{$maimai.File}}">
                             </td>
                             {{end}}
                         </tr>
@@ -67,12 +67,16 @@
                         <tr>
                             <td><input type="submit" value="Abstimmen!"></td>
                         </tr>
+                        
+                        <tr>
+                            <td><small style="color: darkgrey;">{{len .UserVotes}} haben bereits abgestimmt</small></td>
+                        </tr>
                     </tfoot>
                 </table>
             </form>
             {{end}}
             <div class="maimais">
-                {{if .Votes }}
+                {{if .FinishedVoting }}
                 <div class="results card">
                     <h1>Ergebnisse  {{formatCW .CW.Week}}</h1>
                     <table class="votesTable">
