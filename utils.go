@@ -60,3 +60,19 @@ func getYear(r *http.Request) int {
 	}
 	return time.Now().Year()
 }
+
+func getDate(s string) string {
+
+	year, cw := time.Now().ISOWeek()
+
+	if s == "year" {
+		return strconv.Itoa(year)
+	} else if s == "cw" {
+		if cw < 10 {
+			return "0" + strconv.Itoa(cw)
+		}
+		return strconv.Itoa(cw)
+	}
+	// How do I handle stuff like this
+	return "13"
+}
