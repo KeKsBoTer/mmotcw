@@ -269,8 +269,6 @@ func uploadHandler() http.HandlerFunc {
 
 		//fmt.Printf("Upload complete, redirect.\n" + osfile.Name() + "\n")
 
-		//TODO: Redirect
-		w.Header().Add("Location", r.Header.Get("Referer"))
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 	}
