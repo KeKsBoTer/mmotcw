@@ -245,7 +245,7 @@ func uploadHandler() http.HandlerFunc {
 
 		user, _, _ := r.BasicAuth()
 		if user == "" {
-			user = "unknown"
+			user = "Unknown"
 		}
 
 		cFiles := countFiles(folderCW)
@@ -259,7 +259,7 @@ func uploadHandler() http.HandlerFunc {
 			return
 		}
 		defer osfile.Close()
-		fmt.Fprint(w, "Die Datei wurde mit dem Namen "+name+" auf dem Server abgelegt.")
+		//fmt.Fprint(w, "Die Datei wurde mit dem Namen "+name+" auf dem Server abgelegt.")
 		io.Copy(osfile, file)
 
 		if err != nil {
@@ -271,6 +271,7 @@ func uploadHandler() http.HandlerFunc {
 
 		//TODO: Redirect
 		w.Header().Add("Location", r.Header.Get("Referer"))
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 
 	}
 }
