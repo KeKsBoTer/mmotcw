@@ -203,11 +203,11 @@ func vote(source MaimaiSource) http.HandlerFunc {
 func uploadHandler() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.ParseMultipartForm(10 << 20)
-		fmt.Printf("Upload")
+		//fmt.Printf("Upload")
 
 		file, handler, err := r.FormFile("fileToUpload")
 		if err != nil {
-			fmt.Printf("Error in Upload file!")
+			//fmt.Printf("Error in Upload file!")
 			fmt.Print(err)
 			return
 		}
@@ -231,17 +231,17 @@ func uploadHandler() http.HandlerFunc {
 		case "image/webp":
 			ext = ".webp"
 		default:
-			fmt.Fprint(w, "Deine Datei wollen wir hier nicht: "+mimeType)
+			fmt.Fprint(w, "Deine Datei wollen wir hier nicht: "+mimeType+" "+handler.Filename)
 			return
 		}
 
-		fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+		//fmt.Printf("Uploaded File: %+v\n", handler.Filename)
 
 		path := "/var/www/html/"
 		folderYear := checkYearFolder(getDate("year"), path)
-		log.Info(folderYear)
+		//log.Info(folderYear)
 		folderCW := checkCWFolder(getDate("cw"), folderYear)
-		log.Info(folderCW)
+		//log.Info(folderCW)
 
 		user, _, _ := r.BasicAuth()
 		if user == "" {
@@ -263,7 +263,7 @@ func uploadHandler() http.HandlerFunc {
 		io.Copy(osfile, file)
 
 		if err != nil {
-			fmt.Printf("Error in temp")
+			//fmt.Printf("Error in temp")
 			return
 		}
 
