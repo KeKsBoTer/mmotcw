@@ -35,7 +35,7 @@
             {{if and (eq $week_index 0) $bla.CanVote}}
             <form action="/vote" method="post" enctype="multipart/form-data">
                 <table>
-                    {{$votes := numvotes .Maimais}}
+                    {{$votes := numVotes .Maimais}}
                     {{range $i, $maimai := .Maimais}}
                     {{if eq $i 0}}
                     <thead>

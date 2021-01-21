@@ -236,7 +236,7 @@ func readFlags() (string, int) {
 func loadTemplates(dir string) *template.Template {
 
 	funcMap := template.FuncMap{
-		"numvotes": func(maimais []Maimai) []int {
+		"numVotes": func(maimais []Maimai) []int {
 			v := voteCount(len(maimais))
 			votes := make([]int, v)
 			for i := range votes {
@@ -279,6 +279,11 @@ func main() {
 	source := MaimaiSource(miamaiDir)
 	router := createRouter(templates, source)
 	http.Handle("/", router)
+
+	err := InitCache(source)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	log.Infof("starting webserver on http://localhost:%d", port)
 	if err := http.ListenAndServe(":"+strconv.Itoa(port), nil); err != nil {
