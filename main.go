@@ -194,8 +194,7 @@ func vote(source MaimaiSource) http.HandlerFunc {
 		mm.UserVotes.WriteToFile(file)
 		file.Close()
 
-		w.Header().Add("Location", r.Header.Get("Referer"))
-		w.WriteHeader(http.StatusSeeOther)
+		http.Redirect(w,r,r.Header.Get("Referer"),http.StatusSeeOther)
 	}
 }
 
