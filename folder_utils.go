@@ -5,41 +5,42 @@ import (
 	"mime/multipart"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
 
 func checkYearFolder(cw CW, path string) (string, error) {
 
-	folderInfo, err := os.Stat(cw.Path())
+	folderInfo, err := os.Stat(filepath.Join(path, strconv.Itoa(cw.Year)))
 	if os.IsNotExist(err) {
-		err := os.Mkdir(path+strconv.Itoa(cw.Year), 0755)
+		err := os.Mkdir(filepath.Join(path, strconv.Itoa(cw.Year)), 0755)
 		if err != nil {
 			log.Error(err)
 			return "", err
 		}
 
-		return path + strconv.Itoa(cw.Year) + "/", nil
+		return filepath.Join(path, strconv.Itoa(cw.Year), "/"), nil
 
 	}
 	log.Info(folderInfo.Name())
-	return path + strconv.Itoa(cw.Year) + "/", nil
+	return filepath.Join(path, strconv.Itoa(cw.Year), "/"), nil
 
 }
 
 func checkCWFolder(cw CW, path string) (string, error) {
 
-	folderInfo, err := os.Stat(path + cw.Path())
+	folderInfo, err := os.Stat(filepath.Join(path, cw.Path()))
 	if os.IsNotExist(err) {
-		err := os.MkdirAll(path+cw.Path(), 0755)
+		err := os.MkdirAll(filepath.Join(path, cw.Path()), 0755)
 		if err != nil {
 			log.Error(err)
 			return "", err
 		}
-		return path + cw.Path() + "/", nil
+		return filepath.Join(path, cw.Path(), "/"), nil
 	}
 	log.Info(folderInfo.Name())
-	return path + cw.Path() + "/", nil
+	return filepath.Join(path, cw.Path(), "/"), nil
 
 }
 
@@ -58,7 +59,7 @@ func detectType(f multipart.File) (string, error) {
 }
 
 func countFiles(cw CW, path string) (int, error) {
-	files, err := ioutil.ReadDir(path + cw.Path())
+	files, err := ioutil.ReadDir(filepath.Join(path, cw.Path()))
 	if err != nil {
 		log.Error(err)
 		return 0, err
@@ -69,7 +70,7 @@ func countFiles(cw CW, path string) (int, error) {
 
 func countFilesUser(cw CW, name string, path string) (int, error) {
 	counter := 0
-	files, err := ioutil.ReadDir(path + cw.Path())
+	files, err := ioutil.ReadDir(filepath.Join(path, cw.Path()))
 	if err != nil {
 		log.Error(err)
 		return 0, err
