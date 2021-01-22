@@ -1,76 +1,78 @@
 package main
 
 import (
-	"fmt"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
-func checkYearFolder(year string, path string) string {
+func checkYearFolder(cw CW, path string) (string, error) {
 
-	folderInfo, err := os.Stat(path + year)
+	folderInfo, err := os.Stat(cw.Path())
 	if os.IsNotExist(err) {
-		err := os.Mkdir(path+year, 0755)
+		err := os.Mkdir(path+strconv.Itoa(cw.Year), 0755)
 		if err != nil {
-			log.Fatal(err)
-			return "false"
+			log.Error(err)
+			return "", err
 		}
 
-		return path + year + "/"
+		return path + strconv.Itoa(cw.Year) + "/", nil
 
 	}
-	fmt.Printf(folderInfo.Name())
-	return path + year + "/"
+	log.Info(folderInfo.Name())
+	return path + strconv.Itoa(cw.Year) + "/", nil
 
 }
 
-func checkCWFolder(cw string, path string) string {
+func checkCWFolder(cw CW, path string) (string, error) {
 
-	folderInfo, err := os.Stat(path + cw)
+	folderInfo, err := os.Stat(cw.Path())
 	if os.IsNotExist(err) {
-		err := os.Mkdir(path+cw, 0755)
+		err := os.Mkdir(cw.Path(), 0755)
 		if err != nil {
-			log.Fatal(err)
-			return "false"
+			log.Error(err)
+			return "", err
 		}
-		return path + cw + "/"
+		return cw.Path() + "/", nil
 	}
-	fmt.Printf(folderInfo.Name())
-	return path + cw + "/"
+	log.Info(folderInfo.Name())
+	return cw.Path() + "/", nil
 
 }
 
-func detectType(f multipart.File) string {
+func detectType(f multipart.File) (string, error) {
 	buffer := make([]byte, 512)
 	_, err := f.Read(buffer)
 	//_, err := f.Read(buffer)
 	if err != nil {
-		fmt.Printf(err.Error())
-		return "Could not read to Buffer"
+		log.Info(err.Error())
+		return "Could not read to Buffer", err
 	}
 
 	f.Seek(0, 0)
 
-	return http.DetectContentType(buffer)
+	return http.DetectContentType(buffer), nil
 }
 
-func countFiles(path string) int {
-	files, err := ioutil.ReadDir(path)
+func countFiles(cw CW) (int, error) {
+	files, err := ioutil.ReadDir(cw.Path() + "/")
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return 0, err
 	}
 
-	return len(files)
+	return len(files), nil
 }
 
-func countFilesUser(path string, name string) int {
+func countFilesUser(cw CW, name string) (int, error) {
 	counter := 0
-	files, err := ioutil.ReadDir(path)
+	files, err := ioutil.ReadDir(cw.Path())
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err)
+		return 0, err
 	}
 	for _, f := range files {
 		if strings.Contains(f.Name(), name) {
@@ -78,5 +80,5 @@ func countFilesUser(path string, name string) int {
 		}
 	}
 
-	return counter
+	return counter, nil
 }
