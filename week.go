@@ -24,7 +24,7 @@ func (w *Week) SortMaimais() {
 	})
 }
 
-// ReadWeek reads all imformation for week from directory
+// ReadWeek reads all information for week from directory
 func ReadWeek(directory string) (*Week, error) {
 	source := MaimaiSource(filepath.Dir(filepath.Dir(directory)))
 	cw, err := CWFromPath(directory)
@@ -40,19 +40,22 @@ func ReadWeek(directory string) (*Week, error) {
 	uploadLock := CheckLock("upload", directory)
 	voteLock := CheckLock("vote", directory)
 
-	userVotes, err := source.GetVoteResults(*cw)
+	week.UserVotes = UserVotes{}
+	week.Votes = Votes{}
 
-	if err == nil {
-		week.UserVotes = userVotes
-		votes := userVotes.GetVotes()
-		for i, v := range votes {
-			votes[i].Path = filepath.Join(cw.Path(), v.FileName)
+	if CheckLock("upload", filepath.Join(string(source), cw.Path())) {
+		userVotes, err := source.GetVoteResults(*cw)
+		if err == nil {
+			week.UserVotes = userVotes
+			votes := userVotes.GetVotes()
+			for i, v := range votes {
+				votes[i].Path = filepath.Join(cw.Path(), v.FileName)
+			}
+			week.Votes = votes
+		} else {
+			log.Error(err)
 		}
-		week.Votes = votes
-	} else {
-		log.Error(err)
-		week.UserVotes = UserVotes{}
-		week.Votes = Votes{}
+
 	}
 
 	week.CanVote = uploadLock && !voteLock
