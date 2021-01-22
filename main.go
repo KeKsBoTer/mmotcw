@@ -200,7 +200,7 @@ func vote(source MaimaiSource) http.HandlerFunc {
 	}
 }
 
-func uploadHandler() http.HandlerFunc {
+func uploadHandler(source MaimaiSource) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		r.ParseMultipartForm(10 << 20)
 		//fmt.Printf("Upload")
@@ -208,12 +208,16 @@ func uploadHandler() http.HandlerFunc {
 		file, handler, err := r.FormFile("fileToUpload")
 		if err != nil {
 			//fmt.Printf("Error in Upload file!")
-			fmt.Print(err)
+			log.Error(err)
 			return
 		}
 		defer file.Close()
 
-		mimeType := detectType(file)
+		mimeType, err := detectType(file)
+		if err != nil {
+			mimeType = ""
+			err = nil
+		}
 		ext := ".png"
 		switch mimeType {
 		case "image/gif":
@@ -222,25 +226,34 @@ func uploadHandler() http.HandlerFunc {
 			ext = ".png"
 		case "image/jpeg":
 			ext = ".jpg"
-		case "image/bmp":
-			ext = ".bmp"
-		case "image/svg+xml":
-			ext = ".svg"
-		case "image/tiff":
-			ext = ".tif"
-		case "image/webp":
-			ext = ".webp"
+			//		case "image/bmp":
+			//			ext = ".bmp"
+			//		case "image/svg+xml":
+			//			ext = ".svg"
+			//		case "image/tiff":
+			//			ext = ".tif"
+			//		case "image/webp":
+			//			ext = ".webp"
 		default:
-			fmt.Fprint(w, "Deine Datei wollen wir hier nicht: "+mimeType+" "+handler.Filename)
+			log.Info(w, "Deine Datei wollen wir hier nicht: "+mimeType+" "+handler.Filename)
 			return
 		}
 
 		//fmt.Printf("Uploaded File: %+v\n", handler.Filename)
 
-		path := "/var/www/html/"
-		folderYear := checkYearFolder(getDate("year"), path)
+		year, week := time.Now().ISOWeek()
+		cw := CW{Year: year, Week: week}
+		path := string(source)
+		log.Info(path)
+		folderYear, err := checkYearFolder(cw, path)
+		if err != nil {
+			return
+		}
 		//log.Info(folderYear)
-		folderCW := checkCWFolder(getDate("cw"), folderYear)
+		folderCW, err := checkCWFolder(cw, folderYear)
+		if err != nil {
+			return
+		}
 		//log.Info(folderCW)
 
 		user, _, _ := r.BasicAuth()
@@ -248,8 +261,14 @@ func uploadHandler() http.HandlerFunc {
 			user = "Unknown"
 		}
 
-		cFiles := countFiles(folderCW)
-		cFilesUser := countFilesUser(folderCW, user)
+		cFiles, err := countFiles(cw)
+		if err != nil {
+			return
+		}
+		cFilesUser, err := countFilesUser(cw, user)
+		if err != nil {
+			return
+		}
 		name := strconv.Itoa(cFiles) + "_" + user + "_" + strconv.Itoa(cFilesUser)
 
 		osfile, err := os.OpenFile(folderCW+"/"+name+ext, os.O_WRONLY|os.O_CREATE, 0666)
@@ -297,7 +316,7 @@ func createRouter(templates *template.Template, source MaimaiSource) *mux.Router
 
 	r.HandleFunc("/CW_{week:[0-9]+}", week(*templates.Lookup("week.html"), source))
 
-	r.HandleFunc("/upload/", uploadHandler())
+	r.HandleFunc("/upload/", uploadHandler(source))
 
 	return r
 }
