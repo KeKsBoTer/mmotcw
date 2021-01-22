@@ -165,7 +165,7 @@ func vote(source MaimaiSource) http.HandlerFunc {
 			return
 		}
 
-		user := mux.Vars(r)["user"]
+		user, _, _ := r.BasicAuth()
 
 		err := r.ParseMultipartForm(0)
 		if err != nil {
