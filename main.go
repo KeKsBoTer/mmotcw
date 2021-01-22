@@ -9,6 +9,7 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -198,6 +199,99 @@ func vote(source MaimaiSource) http.HandlerFunc {
 	}
 }
 
+func uploadHandler(source MaimaiSource) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		r.ParseMultipartForm(10 << 20)
+		//fmt.Printf("Upload")
+
+		file, handler, err := r.FormFile("fileToUpload")
+		if err != nil {
+			//fmt.Printf("Error in Upload file!")
+			log.Error(err)
+			return
+		}
+		defer file.Close()
+
+		mimeType, err := detectType(file)
+		if err != nil {
+			mimeType = ""
+			err = nil
+		}
+		ext := ".png"
+		switch mimeType {
+		case "image/gif":
+			ext = ".gif"
+		case "image/png":
+			ext = ".png"
+		case "image/jpeg":
+			ext = ".jpg"
+			//		case "image/bmp":
+			//			ext = ".bmp"
+			//		case "image/svg+xml":
+			//			ext = ".svg"
+			//		case "image/tiff":
+			//			ext = ".tif"
+			//		case "image/webp":
+			//			ext = ".webp"
+		default:
+			log.Info(w, "Deine Datei wollen wir hier nicht: "+mimeType+" "+handler.Filename)
+			return
+		}
+
+		//fmt.Printf("Uploaded File: %+v\n", handler.Filename)
+
+		year, week := time.Now().ISOWeek()
+		cw := CW{Year: year, Week: week}
+		path := string(source)
+		log.Info(cw.Path())
+		//folderYear, err := checkYearFolder(cw, path)
+		if err != nil {
+			return
+		}
+		//log.Info(folderYear)
+		folderCW, err := checkCWFolder(cw, path)
+		if err != nil {
+			return
+		}
+		//log.Info(folderCW)
+
+		user, _, _ := r.BasicAuth()
+		if user == "" {
+			user = "Unknown"
+		}
+
+		cFiles, err := countFiles(cw, path)
+		if err != nil {
+			return
+		}
+		cFilesUser, err := countFilesUser(cw, user, path)
+		if err != nil {
+			return
+		}
+		name := strconv.Itoa(cFiles) + "_" + user + "_" + strconv.Itoa(cFilesUser)
+
+		osfile, err := os.OpenFile(folderCW+"/"+name+ext, os.O_WRONLY|os.O_CREATE, 0666)
+
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		defer osfile.Close()
+		//fmt.Fprint(w, "Die Datei wurde mit dem Namen "+name+" auf dem Server abgelegt.")
+		io.Copy(osfile, file)
+
+		if err != nil {
+			//fmt.Printf("Error in temp")
+			return
+		}
+
+		//fmt.Printf("Upload complete, redirect.\n" + osfile.Name() + "\n")
+
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+
+	}
+}
+
 func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/favicon.ico")
 }
@@ -220,6 +314,8 @@ func createRouter(templates *template.Template, source MaimaiSource) *mux.Router
 	r.HandleFunc("/{user:[a-z]+}", userContent(*templates.Lookup("user.html"), source))
 
 	r.HandleFunc("/CW_{week:[0-9]+}", week(*templates.Lookup("week.html"), source))
+
+	r.HandleFunc("/upload/", uploadHandler(source))
 
 	return r
 }
