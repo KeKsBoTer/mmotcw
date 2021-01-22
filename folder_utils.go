@@ -29,17 +29,17 @@ func checkYearFolder(cw CW, path string) (string, error) {
 
 func checkCWFolder(cw CW, path string) (string, error) {
 
-	folderInfo, err := os.Stat(cw.Path())
+	folderInfo, err := os.Stat(path + cw.Path())
 	if os.IsNotExist(err) {
-		err := os.Mkdir(cw.Path(), 0755)
+		err := os.MkdirAll(path+cw.Path(), 0755)
 		if err != nil {
 			log.Error(err)
 			return "", err
 		}
-		return cw.Path() + "/", nil
+		return path + cw.Path() + "/", nil
 	}
 	log.Info(folderInfo.Name())
-	return cw.Path() + "/", nil
+	return path + cw.Path() + "/", nil
 
 }
 
@@ -57,8 +57,8 @@ func detectType(f multipart.File) (string, error) {
 	return http.DetectContentType(buffer), nil
 }
 
-func countFiles(cw CW) (int, error) {
-	files, err := ioutil.ReadDir(cw.Path() + "/")
+func countFiles(cw CW, path string) (int, error) {
+	files, err := ioutil.ReadDir(path + cw.Path())
 	if err != nil {
 		log.Error(err)
 		return 0, err
@@ -67,9 +67,9 @@ func countFiles(cw CW) (int, error) {
 	return len(files), nil
 }
 
-func countFilesUser(cw CW, name string) (int, error) {
+func countFilesUser(cw CW, name string, path string) (int, error) {
 	counter := 0
-	files, err := ioutil.ReadDir(cw.Path())
+	files, err := ioutil.ReadDir(path + cw.Path())
 	if err != nil {
 		log.Error(err)
 		return 0, err

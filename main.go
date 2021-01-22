@@ -244,13 +244,13 @@ func uploadHandler(source MaimaiSource) http.HandlerFunc {
 		year, week := time.Now().ISOWeek()
 		cw := CW{Year: year, Week: week}
 		path := string(source)
-		log.Info(path)
-		folderYear, err := checkYearFolder(cw, path)
+		log.Info(cw.Path())
+		//folderYear, err := checkYearFolder(cw, path)
 		if err != nil {
 			return
 		}
 		//log.Info(folderYear)
-		folderCW, err := checkCWFolder(cw, folderYear)
+		folderCW, err := checkCWFolder(cw, path)
 		if err != nil {
 			return
 		}
@@ -261,11 +261,11 @@ func uploadHandler(source MaimaiSource) http.HandlerFunc {
 			user = "Unknown"
 		}
 
-		cFiles, err := countFiles(cw)
+		cFiles, err := countFiles(cw, path)
 		if err != nil {
 			return
 		}
-		cFilesUser, err := countFilesUser(cw, user)
+		cFilesUser, err := countFilesUser(cw, user, path)
 		if err != nil {
 			return
 		}
