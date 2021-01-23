@@ -50,6 +50,7 @@ func GetMaimais(source MaimaiSource, year int) ([]Week, error) {
 }
 
 func index(template template.Template, source MaimaiSource) http.HandlerFunc {
+
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, _, _ := r.BasicAuth()
 		year := getYear(r)
@@ -58,6 +59,11 @@ func index(template template.Template, source MaimaiSource) http.HandlerFunc {
 			log.Error(err)
 			return
 		}
+
+		if log.IsDebug() {
+			template = *loadTemplates("templates").Lookup("index.html")
+		}
+
 		err = template.Execute(w, struct {
 			Weeks []Week
 			User  string
@@ -195,7 +201,7 @@ func vote(source MaimaiSource) http.HandlerFunc {
 		mm.UserVotes.WriteToFile(file)
 		file.Close()
 
-		http.Redirect(w,r,r.Header.Get("Referer"),http.StatusSeeOther)
+		http.Redirect(w, r, r.Header.Get("Referer"), http.StatusSeeOther)
 	}
 }
 
@@ -349,10 +355,12 @@ func loadTemplates(dir string) *template.Template {
 			return filepath.Join("mm", s)
 		},
 		"toJson": func(i interface{}) string {
-			if b, err := json.Marshal(i); err == nil {
-				return base64.RawStdEncoding.EncodeToString(b)
+			b, err := json.Marshal(i)
+			if err != nil {
+				log.Error(err)
+				return ""
 			}
-			return ""
+			return base64.RawStdEncoding.EncodeToString(b)
 		},
 	}
 

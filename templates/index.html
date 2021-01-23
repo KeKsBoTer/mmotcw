@@ -12,11 +12,24 @@
 </head>
 
 <body>
+    <background></background>
     <header>
-        <h1>MMOTCW</h1>
-        <small>Maimai of the corona week</small>
-        <a href="{{.User}}" style="color: pink;">
-            <p>Meine Seite</p>
+        <div class="title">
+            <h1>MMOTCW</h1>
+            <small>Maimai of the corona week</small>
+            <ul>
+                <li id="{{.User}}">
+                    <a href="{{.User}}">
+                        Meine Seite
+                    </a>
+                </li>
+                <li>
+                    <a href="./mail-notify-me/">
+                        Mail-Benachrichtigungen
+                    </a>
+                </li>
+            </ul>
+        </div>
         </a>
     </header>
     <main>

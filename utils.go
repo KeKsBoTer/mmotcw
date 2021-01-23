@@ -17,7 +17,6 @@ import (
 func CheckLock(name string, weekFolder string) bool {
 	fileName := fmt.Sprintf("%s.lock", name)
 	filePath := filepath.Join(weekFolder, fileName)
-	log.Debugf("checking for lock '%s'", filePath)
 	_, err := os.Stat(filePath)
 	return err == nil
 }

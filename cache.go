@@ -50,31 +50,32 @@ func (c *PreviewCache) GetImage(imgPath string) (CachedImage, error) {
 
 func (c *PreviewCache) cacheImage(imgPath string) error {
 	filePath := filepath.Join(c.dir, imgPath)
-	if imgFile, err := os.OpenFile(filePath, os.O_RDONLY, os.ModePerm); err == nil {
-		img, _, err := image.Decode(imgFile)
-		if err != nil {
-			return err
-		}
-		ratio := float32(img.Bounds().Size().Y) / float32(img.Bounds().Size().X)
-
-		cachedImage := CachedImage{
-			Size:  image.Point{330, 330},
-			Image: "",
-		}
-
-		cachedImage.Size.Y = int(ratio * float32(cachedImage.Size.X))
-		// create smal image preview
-		smallImage := resize.Resize(20, uint(ratio*20), img, resize.Lanczos3)
-		buffer := bytes.NewBuffer([]byte{})
-		if err := jpeg.Encode(buffer, smallImage, nil); err != nil {
-			return err
-		}
-		cachedImage.Image = Base64String(base64.RawStdEncoding.EncodeToString(buffer.Bytes()))
-		c.cache.Store(imgPath, cachedImage)
-		log.Debugf("added image '%s' to cache", imgPath)
-	} else {
+	imgFile, err := os.OpenFile(filePath, os.O_RDONLY, os.ModePerm)
+	defer imgFile.Close()
+	if err != nil {
 		return err
 	}
+	img, _, err := image.Decode(imgFile)
+	if err != nil {
+		return err
+	}
+	ratio := float32(img.Bounds().Size().Y) / float32(img.Bounds().Size().X)
+
+	cachedImage := CachedImage{
+		Size:  image.Point{330, 330},
+		Image: "",
+	}
+
+	cachedImage.Size.Y = int(ratio * float32(cachedImage.Size.X))
+	// create small image preview
+	smallImage := resize.Resize(20, uint(ratio*20), img, resize.Lanczos3)
+	buffer := bytes.NewBuffer([]byte{})
+	if err := jpeg.Encode(buffer, smallImage, nil); err != nil {
+		return err
+	}
+	cachedImage.Image = Base64String(base64.RawStdEncoding.EncodeToString(buffer.Bytes()))
+	c.cache.Store(imgPath, cachedImage)
+	log.Debugf("added image '%s' to cache", imgPath)
 	return nil
 }
 
