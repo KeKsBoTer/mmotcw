@@ -22,6 +22,9 @@ header {
     display: flex;
     align-content: center;
     justify-content: center;
+
+    align-items: center;
+    flex-direction: column;
 }
 
 header .title {
@@ -48,9 +51,11 @@ header .title ul {
     text-align: left;
     border: 0.5px dashed grey;
     border-radius: 7px 5px;
+    margin: 10px;
 
     display: flex;
     align-items: baseline;
+    flex-wrap: wrap;
 }
 
 header .title ul li {
