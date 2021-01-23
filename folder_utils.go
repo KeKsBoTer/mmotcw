@@ -47,7 +47,6 @@ func checkCWFolder(cw CW, path string) (string, error) {
 func detectType(f multipart.File) (string, error) {
 	buffer := make([]byte, 512)
 	_, err := f.Read(buffer)
-	//_, err := f.Read(buffer)
 	if err != nil {
 		log.Info(err.Error())
 		return "Could not read to Buffer", err

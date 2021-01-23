@@ -207,13 +207,17 @@ func vote(source MaimaiSource) http.HandlerFunc {
 
 func uploadHandler(source MaimaiSource) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		r.ParseMultipartForm(10 << 20)
-		//fmt.Printf("Upload")
+		err := r.ParseMultipartForm(10 << 20)
+		if err != nil {
+			log.Error(err)
+			httpError(w, http.StatusBadRequest)
+			return
+		}
 
 		file, handler, err := r.FormFile("fileToUpload")
 		if err != nil {
-			//fmt.Printf("Error in Upload file!")
 			log.Error(err)
+			httpError(w, http.StatusBadRequest)
 			return
 		}
 		defer file.Close()
@@ -231,70 +235,62 @@ func uploadHandler(source MaimaiSource) http.HandlerFunc {
 			ext = ".png"
 		case "image/jpeg":
 			ext = ".jpg"
-			//		case "image/bmp":
-			//			ext = ".bmp"
-			//		case "image/svg+xml":
-			//			ext = ".svg"
-			//		case "image/tiff":
-			//			ext = ".tif"
-			//		case "image/webp":
-			//			ext = ".webp"
 		default:
-			log.Info(w, "Deine Datei wollen wir hier nicht: "+mimeType+" "+handler.Filename)
+			fmt.Fprintf(w, "Deine Datei wollen wir hier nicht: "+mimeType+" "+handler.Filename)
+			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
-
-		//fmt.Printf("Uploaded File: %+v\n", handler.Filename)
 
 		year, week := time.Now().ISOWeek()
 		cw := CW{Year: year, Week: week}
 		path := string(source)
 		log.Info(cw.Path())
-		//folderYear, err := checkYearFolder(cw, path)
 		if err != nil {
+			log.Error(err)
+			httpError(w, http.StatusInternalServerError)
 			return
 		}
-		//log.Info(folderYear)
+
 		folderCW, err := checkCWFolder(cw, path)
 		if err != nil {
+			log.Error(err)
+			httpError(w, http.StatusInternalServerError)
 			return
 		}
-		//log.Info(folderCW)
 
 		user, _, _ := r.BasicAuth()
-		if user == "" {
-			user = "Unknown"
-		}
 
 		cFiles, err := countFiles(cw, path)
 		if err != nil {
+			log.Error(err)
+			httpError(w, http.StatusInternalServerError)
 			return
 		}
 		cFilesUser, err := countFilesUser(cw, user, path)
 		if err != nil {
+			log.Error(err)
+			httpError(w, http.StatusInternalServerError)
 			return
 		}
-		name := strconv.Itoa(cFiles) + "_" + user + "_" + strconv.Itoa(cFilesUser)
+		name := fmt.Sprintf("%d_%s_%d", cFiles, user, cFilesUser)
 
-		osfile, err := os.OpenFile(folderCW+"/"+name+ext, os.O_WRONLY|os.O_CREATE, 0666)
+		osFile, err := os.OpenFile(filepath.Join(folderCW, name+ext), os.O_WRONLY|os.O_CREATE, 0666)
 
 		if err != nil {
 			log.Error(err)
+			httpError(w, http.StatusInternalServerError)
 			return
 		}
-		defer osfile.Close()
-		//fmt.Fprint(w, "Die Datei wurde mit dem Namen "+name+" auf dem Server abgelegt.")
-		io.Copy(osfile, file)
+		defer osFile.Close()
+		io.Copy(osFile, file)
 
 		if err != nil {
-			//fmt.Printf("Error in temp")
+			log.Error(err)
+			httpError(w, http.StatusInternalServerError)
 			return
 		}
 
-		//fmt.Printf("Upload complete, redirect.\n" + osfile.Name() + "\n")
-
 		http.Redirect(w, r, "/", http.StatusSeeOther)
-
 	}
 }
 
@@ -333,7 +329,7 @@ func readFlags() (string, int) {
 	return *directory, *port
 }
 
-// loadTemplates reads all .html files as tempaltes from given directory
+// loadTemplates reads all .html files as templates from given directory
 func loadTemplates(dir string) *template.Template {
 
 	funcMap := template.FuncMap{
