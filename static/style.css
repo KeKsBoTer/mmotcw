@@ -9,6 +9,7 @@ body {
 background {
     background-image: url("img/background.jpeg");
     mask-image: linear-gradient(rgba(0, 0, 0, 1) 0%, transparent 95%);
+    -webkit-mask-image: linear-gradient(rgba(0, 0, 0, 1) 0%, transparent 95%);
     background-color: rgba(255, 255, 255, 0.5);
     background-blend-mode: lighten;
     background-size: cover;
