@@ -317,7 +317,7 @@ func createRouter(templates *template.Template, source MaimaiSource) *mux.Router
 
 	r.HandleFunc("/CW_{week:[0-9]+}", week(*templates.Lookup("week.html"), source))
 
-	r.HandleFunc("/upload/", uploadHandler(source))
+	r.HandleFunc("/upload", uploadHandler(source))
 
 	return r
 }
