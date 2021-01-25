@@ -312,12 +312,12 @@ func createRouter(templates *template.Template, source MaimaiSource) *mux.Router
 	r.HandleFunc("/", index(*templates.Lookup("index.html"), source))
 
 	r.HandleFunc("/vote", vote(source))
+	
+	r.HandleFunc("/upload", uploadHandler(source))
 
 	r.HandleFunc("/{user:[a-z]+}", userContent(*templates.Lookup("user.html"), source))
 
 	r.HandleFunc("/CW_{week:[0-9]+}", week(*templates.Lookup("week.html"), source))
-
-	r.HandleFunc("/upload", uploadHandler(source))
 
 	return r
 }
