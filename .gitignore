@@ -2,3 +2,7 @@
 tests/
 mmotcw
 static/img/background.jpeg
+sub_key
+sub_key.pub
+.gitignore
+subscriptions
