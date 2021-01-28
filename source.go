@@ -8,7 +8,7 @@ import (
 
 // TODO maybe only expose interface for file reading
 
-// MaimaiSource is a directory that containes all maimais
+// MaimaiSource is a directory that contains all maimais
 type MaimaiSource string
 
 // GetMaimaisForCW reads all data from directory and returns a Week struct with the information
@@ -54,4 +54,9 @@ func (m MaimaiSource) GetVoteResults(cw CW) (UserVotes, error) {
 		return votes, nil
 	}
 	return nil, err
+}
+
+// GetPath returns path within source
+func (m MaimaiSource) GetPath(file string) string {
+	return filepath.Join(string(m), file)
 }

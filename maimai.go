@@ -1,6 +1,7 @@
 package main
 
 import (
+	"image"
 	"path/filepath"
 	"time"
 )
@@ -19,6 +20,14 @@ func (m Maimai) Href() string {
 }
 
 // Preview returns the preview cached image
-func (m Maimai) Preview() (CachedImage, error) {
-	return ImgCache.GetImage(m.Href())
+func (m Maimai) Preview() Preview {
+	p, err := ImgCache.GetPreview(m.Href())
+	if err != nil {
+		log.Error(err)
+		p = &Preview{
+			Size:  image.Pt(300, 300),
+			Image: "",
+		}
+	}
+	return *p
 }
