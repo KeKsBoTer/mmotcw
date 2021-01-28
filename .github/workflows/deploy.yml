@@ -20,7 +20,7 @@ jobs:
 
     - name: Build
       run: |
-        GOARCH=arm go build -ldflags="-s -w" -a -o dist/mmotcw .
+        GOARCH=arm go build -o dist/mmotcw .
         cp -r static dist/static
         cp -r templates dist/templates
         
