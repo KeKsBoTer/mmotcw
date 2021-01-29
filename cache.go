@@ -7,6 +7,7 @@ import (
 	"image/jpeg"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sync"
 	"time"
 
@@ -83,34 +84,36 @@ func (c *PreviewCache) cacheImage(imgPath string) error {
 func InitCache(source MaimaiSource) error {
 	year, _ := time.Now().ISOWeek()
 
-	var c chan int = make(chan int)
+	worker := func(jobs <-chan Maimai, wg *sync.WaitGroup) {
+		defer wg.Done()
+		for m := range jobs {
+			m.Preview()
+		}
+	}
 
-	images := 0
+	var wg sync.WaitGroup
+	var jobs chan Maimai = make(chan Maimai)
+
+	for w := 1; w <= runtime.NumCPU(); w++ {
+		wg.Add(1)
+		go worker(jobs, &wg)
+	}
+
 	for i := 0; i < 3; i++ {
-		log.Infof("loading image preview cache for year %d...", year)
-		weeks, err := GetMaimais(source, year)
+		log.Infof("loading image preview cache for year %d...", year-i)
+		weeks, err := GetMaimais(source, year-i)
 		if err != nil {
 			return err
 		}
 
-		// load an image an send info through channel once done
-		load := func(m Maimai, c chan int) {
-			m.Preview()
-			c <- 1
-		}
-
 		for _, w := range weeks {
 			for _, m := range w.Maimais {
-				go load(m, c)
-				images++
+				jobs <- m
 			}
 		}
-		year--
 	}
-	// wait for all image loading threads to return
-	for j := 0; j < images; j++ {
-		<-c
-	}
+	close(jobs)
+	wg.Wait()
 	log.Info("Done")
 	return nil
 }
