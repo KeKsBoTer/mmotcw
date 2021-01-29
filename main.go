@@ -385,7 +385,7 @@ func main() {
 	}
 
 	log.Infof("starting webserver on http://localhost:%d", port)
-	if err := http.ListenAndServe("192.168.178.27:"+strconv.Itoa(port), nil); err != nil {
+	if err := http.ListenAndServe(":"+strconv.Itoa(port), nil); err != nil {
 		log.Fatal(err)
 	}
 }
