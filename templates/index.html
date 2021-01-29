@@ -17,9 +17,14 @@
         <div class="title">
             <h1>MMOTCW</h1>
             <small>Maimai of the corona week</small>
+        </div>
+        </a>
+    </header>
+    <main>
+        <div class="links">
             <ul>
                 <li id="{{.User}}">
-                    <a href="{{.User}}">
+                    <a href="user/{{.User}}">
                         Meine Seite
                     </a>
                 </li>
@@ -30,9 +35,6 @@
                 </li>
             </ul>
         </div>
-        </a>
-    </header>
-    <main>
         <div class="uploader">
             <form action="upload" method="post" enctype="multipart/form-data">
                 <h2>Maimai pfostieren</h2>
@@ -138,9 +140,9 @@
             </div>
         </div>
         {{end}}
+        <button class="elevator-button">Back to Top</button>
     </main>
 
-    <div class="elevator-button">Back to Top</div>
 
     <script src="static/script.js"></script>
 </body>

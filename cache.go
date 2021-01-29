@@ -79,32 +79,36 @@ func (c *PreviewCache) cacheImage(imgPath string) error {
 	return nil
 }
 
-// InitCache loads images for current year into cache
+// InitCache loads images for current year and last three years into cache
 func InitCache(source MaimaiSource) error {
 	year, _ := time.Now().ISOWeek()
-	weeks, err := GetMaimais(source, year)
-	if err != nil {
-		return err
-	}
-
-	// load an image an send info through channel once done
-	load := func(m Maimai, c chan int) {
-		m.Preview()
-		c <- 1
-	}
 
 	var c chan int = make(chan int)
 
-	log.Infof("loading image preview cache for year %d...", year)
-	i := 0
-	for _, w := range weeks {
-		for _, m := range w.Maimais {
-			go load(m, c)
-			i++
+	images := 0
+	for i := 0; i < 3; i++ {
+		log.Infof("loading image preview cache for year %d...", year)
+		weeks, err := GetMaimais(source, year)
+		if err != nil {
+			return err
 		}
+
+		// load an image an send info through channel once done
+		load := func(m Maimai, c chan int) {
+			m.Preview()
+			c <- 1
+		}
+
+		for _, w := range weeks {
+			for _, m := range w.Maimais {
+				go load(m, c)
+				images++
+			}
+		}
+		year--
 	}
 	// wait for all image loading threads to return
-	for j := 0; j < i; j++ {
+	for j := 0; j < images; j++ {
 		<-c
 	}
 	log.Info("Done")

@@ -10,7 +10,7 @@ background {
     background-image: url("img/background.jpeg");
     mask-image: linear-gradient(rgba(0, 0, 0, 1) 0%, transparent 95%);
     -webkit-mask-image: linear-gradient(rgba(0, 0, 0, 1) 0%, transparent 95%);
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.6);
     background-blend-mode: lighten;
     background-size: cover;
     width: 100%;
@@ -38,41 +38,67 @@ header .title {
 }
 
 header .title h1 {
-    font-size: 10vw;
-    margin-bottom: 0px;
+    font-size: 10em;
+    margin: 0px;
+    margin-bottom: -20px;
+    text-shadow: 0 0 100px rgba(0, 0, 0,.9);
 }
 
 header .title small {
-    font-size: 2vw;
+    font-size: 1.8em;
+    text-shadow: 0 0px  7px rgba(255, 255, 255, 0.5);
 }
 
-header .title ul {
+@media screen and (max-width:700px){
+    header .title h1 {
+        font-size: 20vw;
+    }
+
+    header .title small {
+        font-size: 4vw;
+    }
+}
+
+
+.links ul {
     font-family: 'Courier New', Courier, monospace;
     background: white;
-    padding: 10px 20px;
+    padding: 20px 10px;
     text-align: left;
     border: 0.5px dashed grey;
     border-radius: 7px 5px;
-    margin: 10px;
 
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
+    justify-content: space-evenly;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
-header .title ul li {
+.links ul li {
     color: black;
     margin-left: 70px;
     margin-right: 40px;
     list-style-image: url('img/taube.png');
 }
 
-header .title ul li a {
+.links ul li:last-child {
+    margin-right: 0;
+}
+
+.links ul li a {
     color: inherit;
     text-decoration: none;
     position: relative;
     top: -25px;
     font-weight: bold;
+}
+
+
+@media screen and (max-width:600px){
+    .links ul{
+        flex-direction: column;
+    }
 }
 
 #simon {
@@ -100,7 +126,8 @@ header .title ul li a {
     overflow: hidden;
     background-color: rgb(86, 85, 97);
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-    border-radius: 5px;
+    border-radius: 7px 5px;
+    border: 0.5px dashed grey;
 }
 
 #wolken {
@@ -199,7 +226,7 @@ p {
     align-content: stretch;
 }
 
-@mediscreen and (max-width: 720px) {
+@media screen and (max-width: 720px) {
     .maimais {
         display: flex;
         flex-wrap: wrap;
@@ -228,6 +255,23 @@ p {
     width: attr("width"px);
     filter: blur(10px);
 }
+
+@media screen and (max-width: 720px) {
+
+    .week .meme {
+        flex-grow: 1;
+        width: auto;
+    }
+
+    .week a {
+        width: 100%;
+    }
+    .week img {
+        width: 100%;
+        height: auto;
+    }
+}
+
 
 .meme p {
     position: absolute;
@@ -279,4 +323,9 @@ a:hover {
     padding: 3px 7px;
     border-radius: 3px;
     margin: 3px;
+}
+
+.elevator-button{
+    display: block;
+    margin: 20px;
 }

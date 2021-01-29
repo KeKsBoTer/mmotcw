@@ -312,10 +312,10 @@ func createRouter(templates *template.Template, source MaimaiSource) *mux.Router
 	r.HandleFunc("/", index(*templates.Lookup("index.html"), source))
 
 	r.HandleFunc("/vote", vote(source))
-	
+
 	r.HandleFunc("/upload", uploadHandler(source))
 
-	r.HandleFunc("/{user:[a-z]+}", userContent(*templates.Lookup("user.html"), source))
+	r.HandleFunc("/user/{user:[a-z]+}", userContent(*templates.Lookup("user.html"), source))
 
 	r.HandleFunc("/CW_{week:[0-9]+}", week(*templates.Lookup("week.html"), source))
 
@@ -385,7 +385,7 @@ func main() {
 	}
 
 	log.Infof("starting webserver on http://localhost:%d", port)
-	if err := http.ListenAndServe(":"+strconv.Itoa(port), nil); err != nil {
+	if err := http.ListenAndServe("192.168.178.27:"+strconv.Itoa(port), nil); err != nil {
 		log.Fatal(err)
 	}
 }
