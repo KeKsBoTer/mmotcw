@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"crypto/sha1"
 	"encoding/base64"
 	"fmt"
@@ -124,8 +123,7 @@ func (c *ImageCache) cacheImage(imgPath string) ([]byte, error) {
 		return nil, err
 	}
 
-	var buffer bytes.Buffer
-	err = webp.Encode(&buffer, img, &webp.Options{Lossless: false, Quality: 90, Exact: true})
+	data, err := webp.EncodeRGBA(img, 90)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +133,6 @@ func (c *ImageCache) cacheImage(imgPath string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	data := buffer.Bytes()
 	fc.Write(data)
 	if err != nil {
 		return nil, err
