@@ -23,7 +23,7 @@ jobs:
 
     - name: Build
       run: |
-        CC="arm-linux-gnueabi-gcc"  CGO_ENABLED=1 GOARCH=arm go build -o dist/mmotcw -a -installsuffix cgo -ldflags '-s' .
+        CC="arm-linux-gnueabi-gcc"  CGO_ENABLED=1 GOARCH=arm go build -o dist/mmotcw .
         cp -r static dist/static
         cp -r templates dist/templates
         
