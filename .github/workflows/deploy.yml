@@ -19,7 +19,7 @@ jobs:
         go-version: 1.15
 
     - name: Install build-tools
-      run: sudo apt-get update &&  sudo apt-get install -y -f gcc-arm-linux-gnueabi gccgo-arm-linux-gnueabi
+      run: sudo apt-get update &&  sudo apt-get install -y -f gcc-7-arm-linux-gnueabi gccgo-7-arm-linux-gnueabi 
 
     - name: Build
       run: |
