@@ -6,11 +6,11 @@ import (
 	"image"
 	"image/jpeg"
 	"os"
-	"path/filepath"
 	"runtime"
 	"sync"
 	"time"
 
+	"github.com/chai2010/webp"
 	"github.com/nfnt/resize"
 )
 
@@ -49,12 +49,38 @@ func (c *PreviewCache) GetImage(imgPath string) (CachedImage, error) {
 	return img.(CachedImage), nil
 }
 
-func (c *PreviewCache) cacheImage(imgPath string) error {
-	filePath := filepath.Join(c.dir, imgPath)
-	imgFile, err := os.OpenFile(filePath, os.O_RDONLY, os.ModePerm)
-	defer imgFile.Close()
+// caches image and returns the content
+func (c *ImageCache) cacheImage(imgPath string) ([]byte, error) {
+	f, err := os.Open(c.source.GetPath(imgPath))
 	if err != nil {
-		return err
+		return nil, err
+	}
+	img, _, err := image.Decode(f)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := webp.EncodeRGBA(img, 90)
+	if err != nil {
+		return nil, err
+	}
+	// save cache file
+	fp := c.getCachePath(imgPath, false)
+	fc, err := os.Create(fp)
+	if err != nil {
+		return nil, err
+	}
+	fc.Write(data)
+	if err != nil {
+		return nil, err
+	}
+	return data, err
+}
+
+func (c *ImageCache) cachePreview(imgPath string) (*Preview, error) {
+	imgData, err := c.cacheImage(imgPath)
+	if err != nil {
+		return nil, err
 	}
 	img, _, err := image.Decode(imgFile)
 	if err != nil {
