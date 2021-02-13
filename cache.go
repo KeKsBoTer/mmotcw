@@ -87,7 +87,10 @@ func InitCache(source MaimaiSource) error {
 	worker := func(jobs <-chan Maimai, wg *sync.WaitGroup) {
 		defer wg.Done()
 		for m := range jobs {
-			m.Preview()
+			_, err := m.Preview()
+			if err != nil {
+				log.Warnf("cannot precache image %e ", err)
+			}
 		}
 	}
 
@@ -100,12 +103,16 @@ func InitCache(source MaimaiSource) error {
 	}
 
 	for i := 0; i < 3; i++ {
-		log.Infof("loading image preview cache for year %d...", year-i)
 		weeks, err := GetMaimais(source, year-i)
 		if err != nil {
 			return err
 		}
+		if len(weeks) == 0 {
+			// nothing to cache
+			continue
+		}
 
+		log.Infof("loading image preview cache for year %d...", year-i)
 		for _, w := range weeks {
 			for _, m := range w.Maimais {
 				jobs <- m

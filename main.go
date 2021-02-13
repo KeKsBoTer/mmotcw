@@ -15,7 +15,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -90,10 +89,9 @@ func userContent(template template.Template, source MaimaiSource) http.HandlerFu
 		}
 		empty := true
 		for w := range weeks {
-			filtered := []Maimai{}
+			filtered := []UserMaimai{}
 			for _, m := range weeks[w].Maimais {
-				creator := strings.ToLower(strings.Trim(strings.Split(m.File, ".")[0], "_0123456789"))
-				if creator == user {
+				if string(m.User) == user {
 					filtered = append(filtered, m)
 					empty = false
 				}
@@ -243,7 +241,7 @@ func uploadHandler(source MaimaiSource) http.HandlerFunc {
 
 		year, week := time.Now().ISOWeek()
 		cw := CW{Year: year, Week: week}
-		
+
 		if !CheckLock("upload", filepath.Join(string(source), cw.Path())) {
 			fmt.Fprint(w, `
 				<h1>Upload nicht mehr möglich!</h1>
@@ -252,8 +250,7 @@ func uploadHandler(source MaimaiSource) http.HandlerFunc {
 			`)
 			return
 		}
-		
-		
+
 		path := string(source)
 		log.Info(cw.Path())
 		if err != nil {

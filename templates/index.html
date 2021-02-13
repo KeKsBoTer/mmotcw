@@ -68,10 +68,10 @@
                     <tbody>
                         {{end}}
                         <tr>
-                            <td>{{.File}}</td>
+                            <td>{{.FileName}}</td>
                             {{range $votes}}
                             <td>
-                                <input type="radio" id="{{$maimai.File}}" name="{{.}}" value="{{$maimai.File}}">
+                                <input type="radio" id="{{$maimai.FileName}}" name="{{.}}" value="{{$maimai.FileName}}">
                             </td>
                             {{end}}
                         </tr>
@@ -134,7 +134,7 @@
                             style="background-image: url('data:image/jpg;base64,{{(.Preview).Image}}')"
                             loading="lazy" />
                     </a>
-                    <p>{{.File}}</p>
+                    <p>{{.FileName}}</p>
                 </div>
                 {{end}}
             </div>

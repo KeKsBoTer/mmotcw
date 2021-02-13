@@ -78,7 +78,7 @@ func (votes UserVotes) WriteToFile(file io.Writer) error {
 	writer.UseCRLF = false
 
 	for user, v := range votes {
-		//TODO store user
+		// TODO store user
 		line := make([]string, len(v)+1)
 		line[0] = user
 		copy(line[1:], v)

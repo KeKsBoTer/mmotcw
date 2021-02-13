@@ -6,27 +6,8 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 )
-
-func checkYearFolder(cw CW, path string) (string, error) {
-
-	folderInfo, err := os.Stat(filepath.Join(path, strconv.Itoa(cw.Year)))
-	if os.IsNotExist(err) {
-		err := os.Mkdir(filepath.Join(path, strconv.Itoa(cw.Year)), 0755)
-		if err != nil {
-			log.Error(err)
-			return "", err
-		}
-
-		return filepath.Join(path, strconv.Itoa(cw.Year), "/"), nil
-
-	}
-	log.Info(folderInfo.Name())
-	return filepath.Join(path, strconv.Itoa(cw.Year), "/"), nil
-
-}
 
 func checkCWFolder(cw CW, path string) (string, error) {
 
