@@ -242,8 +242,7 @@ func uploadHandler(source MaimaiSource) http.HandlerFunc {
 
 		year, week := time.Now().ISOWeek()
 		cw := CW{Year: year, Week: week}
-
-		if !CheckLock("upload", filepath.Join(string(source), cw.Path())) {
+		if CheckLock("upload", filepath.Join(string(source), cw.Path())) {
 			fmt.Fprint(w, `
 				<h1>Upload nicht mehr möglich!</h1>
 				<p>Sehr geehrte[r] Pfostierer:in!</p>
