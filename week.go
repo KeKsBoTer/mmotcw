@@ -7,20 +7,21 @@ import (
 
 // Week stores information about the maimais, votes etc. of a week
 type Week struct {
-	Maimais        []Maimai
+	Maimais        []UserMaimai
 	CW             CW
 	Votes          Votes
 	UserVotes      UserVotes
 	CanVote        bool
 	FinishedVoting bool
 	// template file name
-	Template *Maimai
+	Template *Template
 }
 
 // SortMaimais sorts the maimais by date
 func (w *Week) SortMaimais() {
 	sort.Slice(w.Maimais[:], func(i, j int) bool {
-		return w.Maimais[i].Time.After(w.Maimais[j].Time)
+		a, b := w.Maimais[i], w.Maimais[j]
+		return b.Before(a)
 	})
 }
 

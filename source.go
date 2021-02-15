@@ -18,19 +18,23 @@ func (m MaimaiSource) GetMaimaisForCW(cw CW) (*Week, error) {
 		return nil, err
 	}
 	week := Week{
-		Maimais: []Maimai{},
+		Maimais: []UserMaimai{},
 		CW:      cw,
 	}
 	for _, img := range imgFiles {
-		mm := Maimai{
-			File: img.Name(),
-			Time: img.ModTime(),
-			CW:   cw,
-		}
+
 		if !strings.HasPrefix(img.Name(), "template.") {
-			week.Maimais = append(week.Maimais, mm)
+			mm, err := NewUserMaimai(img.Name(), cw)
+			if err != nil {
+				log.Errorf("error in %d/%d: %v", cw.Week, cw.Year, err)
+				continue
+			}
+			week.Maimais = append(week.Maimais, *mm)
 		} else {
-			week.Template = &mm
+			week.Template = &Template{
+				ImageType: strings.TrimPrefix(filepath.Ext(img.Name()), "."), // trim dot at start with TrimPrefix
+				CW:        cw,
+			}
 		}
 	}
 	week.SortMaimais()
