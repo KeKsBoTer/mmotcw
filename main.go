@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -91,7 +92,7 @@ func userContent(template template.Template, source MaimaiSource) http.HandlerFu
 		for w := range weeks {
 			filtered := []UserMaimai{}
 			for _, m := range weeks[w].Maimais {
-				if string(m.User) == user {
+				if strings.ToLower(string(m.User)) == strings.ToLower(user) {
 					filtered = append(filtered, m)
 					empty = false
 				}
