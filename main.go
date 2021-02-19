@@ -341,7 +341,7 @@ func readFlags() (string, int) {
 func loadTemplates(dir string) *template.Template {
 
 	funcMap := template.FuncMap{
-		"numVotes": func(maimais []Maimai) []int {
+		"numVotes": func(maimais []UserMaimai) []int {
 			v := voteCount(len(maimais))
 			votes := make([]int, v)
 			for i := range votes {
