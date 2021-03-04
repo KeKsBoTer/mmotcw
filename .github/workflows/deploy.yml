@@ -1,8 +1,7 @@
 name: Deploy project
 
 on:
-  pull_request:
-    types: [closed]
+  push:
     branches: [ master ]
 
 jobs:
@@ -31,7 +30,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged
+    if: github.repository == 'KeKsBoTer/mmotcw'
     steps: 
     - uses: actions/download-artifact@master
       with:
