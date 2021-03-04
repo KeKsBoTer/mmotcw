@@ -275,7 +275,7 @@ func uploadHandler(source MaimaiSource, s *Subscriptions) http.HandlerFunc {
 			httpError(w, http.StatusInternalServerError)
 		}
 
-		cFiles := len(weekData.Maimais)
+		cFiles := len(weekData.Maimais) + 1
 		cFilesUser := weekData.UserUploads(user)
 		name := fmt.Sprintf("%d_%s_%d.%s", cFiles, user, cFilesUser, ext)
 
