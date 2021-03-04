@@ -1,7 +1,5 @@
 name: Build project
 on:
-  push:
-    branches: [ master ]
   pull_request:
     types: [opened]
     branches: [ master ]
