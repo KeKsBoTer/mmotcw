@@ -1,13 +1,16 @@
 name: CI
 
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    types: [closed]
+    branches: [ master ]
+
 jobs:
+
   build:
     runs-on: ubuntu-latest
-    on:
-      push:
-        branches: [ master ]
-      pull_request:
-        branches: [ master ]
     steps:
     - uses: actions/checkout@v2
 
@@ -31,9 +34,6 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     if: github.repository == 'KeKsBoTer/mmotcw'
-    on:
-      push:
-        branches: [ master ]
     steps: 
     - uses: actions/download-artifact@master
       with:
