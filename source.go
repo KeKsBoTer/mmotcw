@@ -26,7 +26,7 @@ func (m MaimaiSource) GetMaimaisForCW(cw CW) (*Week, error) {
 		if !strings.HasPrefix(img.Name(), "template.") {
 			mm, err := NewUserMaimai(img.Name(), cw)
 			if err != nil {
-				log.Errorf("error in %d/%d: %v", cw.Week, cw.Year, err)
+				log.Errorf("error in %d/%d/%s: %v", cw.Year, cw.Week, img.Name(), err)
 				continue
 			}
 			week.Maimais = append(week.Maimais, *mm)

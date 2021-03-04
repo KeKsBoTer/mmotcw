@@ -49,7 +49,7 @@ func GetMaimais(source MaimaiSource, year int) ([]Week, error) {
 	return weeks, nil
 }
 
-func index(template template.Template, source MaimaiSource) http.HandlerFunc {
+func index(template template.Template, source MaimaiSource, s *Subscriptions) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, _, _ := r.BasicAuth()
@@ -65,11 +65,13 @@ func index(template template.Template, source MaimaiSource) http.HandlerFunc {
 		}
 
 		err = template.Execute(w, struct {
-			Weeks []Week
-			User  string
+			Weeks         []Week
+			User          string
+			PushPublicKey string
 		}{
-			Weeks: maimais,
-			User:  user,
+			Weeks:         maimais,
+			User:          user,
+			PushPublicKey: s.publicKey,
 		})
 		if err != nil {
 			fmt.Println(err)
@@ -204,7 +206,7 @@ func vote(source MaimaiSource) http.HandlerFunc {
 	}
 }
 
-func uploadHandler(source MaimaiSource) http.HandlerFunc {
+func uploadHandler(source MaimaiSource, s *Subscriptions) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := r.ParseMultipartForm(10 << 20)
 		if err != nil {
@@ -226,16 +228,16 @@ func uploadHandler(source MaimaiSource) http.HandlerFunc {
 			mimeType = ""
 			err = nil
 		}
-		ext := ".png"
+		ext := "png"
 		switch mimeType {
 		case "image/gif":
-			ext = ".gif"
+			ext = "gif"
 		case "image/png":
-			ext = ".png"
+			ext = "png"
 		case "image/jpeg":
-			ext = ".jpg"
+			ext = "jpg"
 		default:
-			fmt.Fprintf(w, "Deine Datei wollen wir hier nicht: "+mimeType+" "+handler.Filename)
+			fmt.Fprintf(w, "Deine Datei wollen wir hier nicht: %s %s", mimeType, handler.Filename)
 			w.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -267,22 +269,17 @@ func uploadHandler(source MaimaiSource) http.HandlerFunc {
 		}
 
 		user, _, _ := r.BasicAuth()
-
-		cFiles, err := countFiles(cw, path)
+		weekData, err := ReadWeek(folderCW)
 		if err != nil {
 			log.Error(err)
 			httpError(w, http.StatusInternalServerError)
-			return
 		}
-		cFilesUser, err := countFilesUser(cw, user, path)
-		if err != nil {
-			log.Error(err)
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-		name := fmt.Sprintf("%d_%s_%d", cFiles, user, cFilesUser)
 
-		osFile, err := os.OpenFile(filepath.Join(folderCW, name+ext), os.O_WRONLY|os.O_CREATE, 0666)
+		cFiles := len(weekData.Maimais)
+		cFilesUser := weekData.UserUploads(user)
+		name := fmt.Sprintf("%d_%s_%d.%s", cFiles, user, cFilesUser, ext)
+
+		osFile, err := os.Create(filepath.Join(folderCW, name))
 
 		if err != nil {
 			log.Error(err)
@@ -290,14 +287,15 @@ func uploadHandler(source MaimaiSource) http.HandlerFunc {
 			return
 		}
 		defer osFile.Close()
-		io.Copy(osFile, file)
 
+		_, err = io.Copy(osFile, file)
 		if err != nil {
 			log.Error(err)
 			httpError(w, http.StatusInternalServerError)
 			return
 		}
 
+		s.Send(fmt.Sprintf("%s has ein Maimai pfostiert", user))
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 }
@@ -317,11 +315,15 @@ func createRouter(templates *template.Template, source MaimaiSource, sub *Subscr
 	fsMaimais := http.FileServer(http.Dir(string(source)))
 	r.PathPrefix("/mm/").Handler(http.StripPrefix("/mm/", fsMaimais))
 
-	r.HandleFunc("/", index(*templates.Lookup("index.html"), source))
+	r.HandleFunc("/", index(*templates.Lookup("index.html"), source, sub))
+
+	r.HandleFunc("/sw.js", func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, "./static/js/sw.js")
+	})
 
 	r.HandleFunc("/vote", vote(source))
 
-	r.HandleFunc("/upload", uploadHandler(source))
+	r.HandleFunc("/upload", uploadHandler(source, sub))
 
 	r.HandleFunc("/subscribe", subscribe(sub))
 

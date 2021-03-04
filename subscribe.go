@@ -21,24 +21,25 @@ type Subscriptions struct {
 	subscriptionsFile string
 }
 
+// NewSubscriptions reads files or creates them if necessary
 func NewSubscriptions(privateKeyFile, publicKeyFile, subscriptionsFile string) (*Subscriptions, error) {
-	fpub, err := os.OpenFile(publicKeyFile, os.O_RDWR|os.O_CREATE, 0666)
+	fPub, err := os.OpenFile(publicKeyFile, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		return nil, err
 	}
-	defer fpub.Close()
-	pubKeyBytes, err := io.ReadAll(fpub)
+	defer fPub.Close()
+	pubKeyBytes, err := io.ReadAll(fPub)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read public key %s: %v", publicKeyFile, err)
 	}
 	pubKey := string(pubKeyBytes)
 
-	fprivate, err := os.OpenFile(privateKeyFile, os.O_RDWR|os.O_CREATE, 0666)
+	fPrivate, err := os.OpenFile(privateKeyFile, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		return nil, err
 	}
-	defer fprivate.Close()
-	privateKeyBytes, err := io.ReadAll(fprivate)
+	defer fPrivate.Close()
+	privateKeyBytes, err := io.ReadAll(fPrivate)
 	if err != nil {
 		return nil, fmt.Errorf("cannot read private key %s: %v", publicKeyFile, err)
 	}
@@ -53,11 +54,11 @@ func NewSubscriptions(privateKeyFile, publicKeyFile, subscriptionsFile string) (
 		if err != nil {
 			return nil, fmt.Errorf("cannot generate key pair: %v", err)
 		}
-		_, err := fprivate.WriteString(privateKey)
+		_, err := fPrivate.WriteString(privateKey)
 		if err != nil {
 			return nil, fmt.Errorf("cannot save private key to %s: %v", privateKeyFile, err)
 		}
-		_, err = fpub.WriteString(pubKey)
+		_, err = fPub.WriteString(pubKey)
 		if err != nil {
 			return nil, fmt.Errorf("cannot save public key to %s: %v", publicKeyFile, err)
 		}
@@ -68,7 +69,7 @@ func NewSubscriptions(privateKeyFile, publicKeyFile, subscriptionsFile string) (
 		return nil, fmt.Errorf("private key file '%s' is empty", publicKeyFile)
 	}
 
-	subf, err := os.OpenFile(subscriptionsFile, os.O_RDWR|os.O_CREATE, 0666)
+	subFile, err := os.OpenFile(subscriptionsFile, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		return nil, err
 	}
@@ -82,10 +83,10 @@ func NewSubscriptions(privateKeyFile, publicKeyFile, subscriptionsFile string) (
 
 	if newKeys {
 		log.Info("clearing subscriptions...")
-		subf.Truncate(0)
-		subf.Seek(0, 0)
+		subFile.Truncate(0)
+		subFile.Seek(0, 0)
 	} else {
-		subBytes, err := io.ReadAll(subf)
+		subBytes, err := io.ReadAll(subFile)
 		if err != nil {
 			return nil, fmt.Errorf("cannot read subscriptions %s: %v", subscriptionsFile, err)
 		}
@@ -106,18 +107,18 @@ func (s *Subscriptions) Add(jsonBytes []byte) error {
 		return fmt.Errorf("invalid subscription body: %v", err)
 	}
 
-	f, err := os.OpenFile(s.subscriptionsFile, os.O_APPEND, 0666)
+	f, err := os.OpenFile(s.subscriptionsFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 	if err != nil {
 		return err
 	}
-	f.WriteString("\n")
 	f.Write(jsonBytes)
+	f.WriteString("\n")
 
 	s.subscriptions = append(s.subscriptions, sub)
 	return nil
 }
 
-// Send sents push notification to all subscribers
+// Send sends push notification to all subscribers
 func (s Subscriptions) Send(message string) {
 
 	worker := func(jobs <-chan webpush.Subscription, wg *sync.WaitGroup) {
@@ -135,7 +136,7 @@ func (s Subscriptions) Send(message string) {
 			}
 			if resp.StatusCode != http.StatusOK {
 				respBody, _ := io.ReadAll(resp.Body)
-				log.Warnf("push notification response: %s", string(respBody))
+				log.Warnf("push notification response: %s (status %d)", string(respBody), resp.StatusCode)
 			}
 		}
 	}
@@ -158,7 +159,7 @@ func (s Subscriptions) Send(message string) {
 
 func subscribe(s *Subscriptions) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		data, err := io.ReadAll(r.Response.Body)
+		data, err := io.ReadAll(r.Body)
 		if err != nil {
 			log.Error("error reading http body:", err)
 			httpError(w, http.StatusInternalServerError)
@@ -171,8 +172,8 @@ func subscribe(s *Subscriptions) http.HandlerFunc {
 			httpError(w, http.StatusBadRequest)
 			return
 		}
+		log.Info("registered push notification subscription")
 
 		fmt.Fprint(w, "ok")
-		w.WriteHeader(http.StatusOK)
 	}
 }
