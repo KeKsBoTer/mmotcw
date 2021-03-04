@@ -1,0 +1,8 @@
+{
+    "name": "Maimai Of The Corona Week",
+    "short_name": "MMOTCW",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#fff",
+    "description": "MMOTCW - Maimai of the corona week"
+  }

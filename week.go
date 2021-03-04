@@ -3,6 +3,7 @@ package main
 import (
 	"path/filepath"
 	"sort"
+	"strings"
 )
 
 // Week stores information about the maimais, votes etc. of a week
@@ -23,6 +24,17 @@ func (w *Week) SortMaimais() {
 		a, b := w.Maimais[i], w.Maimais[j]
 		return b.Before(a)
 	})
+}
+
+// UserUploads counts the users upload in a week
+func (w Week) UserUploads(user string) int {
+	uploads := 0
+	for _, m := range w.Maimais {
+		if strings.ToLower(string(m.User)) == strings.ToLower(user) {
+			uploads++
+		}
+	}
+	return uploads
 }
 
 // ReadWeek reads all information for week from directory
