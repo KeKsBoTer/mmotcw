@@ -386,9 +386,9 @@ func main() {
 	ImgCache.dir = miamaiDir
 
 	sub, err := NewSubscriptions(
-		"sub_key",
-		"sub_key.pub",
-		"subscriptions",
+		"/var/lib/mmotcw/sub_key",
+		"/var/lib/mmotcw/sub_key.pub",
+		"/var/lib/mmotcw/subscriptions",
 	)
 	if err != nil {
 		log.Fatal(err)
