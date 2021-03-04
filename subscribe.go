@@ -134,7 +134,7 @@ func (s Subscriptions) Send(message string) {
 			if err != nil {
 				log.Errorf("cannot send push notification: %v", err)
 			}
-			if resp.StatusCode != http.StatusOK {
+			if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusCreated {
 				respBody, _ := io.ReadAll(resp.Body)
 				log.Warnf("push notification response: %s (status %d)", string(respBody), resp.StatusCode)
 			}
