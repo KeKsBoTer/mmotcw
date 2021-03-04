@@ -306,7 +306,7 @@ func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/favicon.ico")
 }
 
-func createRouter(templates *template.Template, source MaimaiSource) *mux.Router {
+func createRouter(templates *template.Template, source MaimaiSource, sub *Subscriptions) *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/favicon.ico", faviconHandler)
 
@@ -322,6 +322,8 @@ func createRouter(templates *template.Template, source MaimaiSource) *mux.Router
 	r.HandleFunc("/vote", vote(source))
 
 	r.HandleFunc("/upload", uploadHandler(source))
+
+	r.HandleFunc("/subscribe", subscribe(sub))
 
 	r.HandleFunc("/{user:[a-z]+}", userContent(*templates.Lookup("user.html"), source))
 
@@ -381,13 +383,22 @@ func main() {
 
 	ImgCache.dir = miamaiDir
 
+	sub, err := NewSubscriptions(
+		"sub_key",
+		"sub_key.pub",
+		"subscriptions",
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	templates := loadTemplates("./templates")
 
 	source := MaimaiSource(miamaiDir)
-	router := createRouter(templates, source)
+	router := createRouter(templates, source, sub)
 	http.Handle("/", router)
 
-	err := InitCache(source)
+	err = InitCache(source)
 	if err != nil {
 		log.Fatal(err)
 	}
