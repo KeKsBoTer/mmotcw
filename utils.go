@@ -13,7 +13,7 @@ import (
 )
 
 // CheckLock checks whether a lock file with a given name exists in a directory
-// name of file musst be {name}.lock
+// name of file must be {name}.lock
 func CheckLock(name string, weekFolder string) bool {
 	fileName := fmt.Sprintf("%s.lock", name)
 	filePath := filepath.Join(weekFolder, fileName)

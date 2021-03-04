@@ -226,14 +226,14 @@ func uploadHandler(source MaimaiSource) http.HandlerFunc {
 			mimeType = ""
 			err = nil
 		}
-		ext := ".png"
+		ext := "png"
 		switch mimeType {
 		case "image/gif":
-			ext = ".gif"
+			ext = "gif"
 		case "image/png":
-			ext = ".png"
+			ext = "png"
 		case "image/jpeg":
-			ext = ".jpg"
+			ext = "jpg"
 		default:
 			fmt.Fprintf(w, "Deine Datei wollen wir hier nicht: "+mimeType+" "+handler.Filename)
 			w.WriteHeader(http.StatusBadRequest)
@@ -252,7 +252,6 @@ func uploadHandler(source MaimaiSource) http.HandlerFunc {
 		}
 
 		path := string(source)
-		log.Info(cw.Path())
 		if err != nil {
 			log.Error(err)
 			httpError(w, http.StatusInternalServerError)
@@ -280,9 +279,9 @@ func uploadHandler(source MaimaiSource) http.HandlerFunc {
 			httpError(w, http.StatusInternalServerError)
 			return
 		}
-		name := fmt.Sprintf("%d_%s_%d", cFiles, user, cFilesUser)
+		name := fmt.Sprintf("%d_%s_%d.%s", cFiles, user, cFilesUser, ext)
 
-		osFile, err := os.OpenFile(filepath.Join(folderCW, name+ext), os.O_WRONLY|os.O_CREATE, 0666)
+		osFile, err := os.Create(filepath.Join(folderCW, name))
 
 		if err != nil {
 			log.Error(err)
@@ -297,6 +296,9 @@ func uploadHandler(source MaimaiSource) http.HandlerFunc {
 			httpError(w, http.StatusInternalServerError)
 			return
 		}
+
+		// cache image
+		ImgCache.GetPreview(filepath.Join(cw.Path(), name))
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
@@ -314,7 +316,7 @@ func createRouter(templates *template.Template, source MaimaiSource, sub *Subscr
 	r.PathPrefix("/static/").Handler(http.StripPrefix("/static/", fs))
 
 	// file server for maimais
-	fsMaimais := http.FileServer(http.Dir(string(source)))
+	fsMaimais := ImageServer(http.Dir(string(source)))
 	r.PathPrefix("/mm/").Handler(http.StripPrefix("/mm/", fsMaimais))
 
 	r.HandleFunc("/", index(*templates.Lookup("index.html"), source))
