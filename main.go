@@ -123,8 +123,7 @@ func userContent(template template.Template, source MaimaiSource) http.HandlerFu
 func week(template template.Template, source MaimaiSource) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		week, _ := strconv.Atoi(mux.Vars(r)["week"])
-
-		year := getYear(r)
+		year, _ := strconv.Atoi(mux.Vars(r)["year"])
 
 		maimais, err := source.GetMaimaisForCW(CW{Year: year, Week: week})
 		if err != nil {
@@ -329,7 +328,7 @@ func createRouter(templates *template.Template, source MaimaiSource, sub *Subscr
 
 	r.HandleFunc("/{user:[a-z]+}", userContent(*templates.Lookup("user.html"), source))
 
-	r.HandleFunc("/CW_{week:[0-9]+}", week(*templates.Lookup("week.html"), source))
+	r.HandleFunc("/{year:202[0-9]}/CW_{week:[0-9]+}", week(*templates.Lookup("week.html"), source))
 
 	return r
 }
@@ -359,6 +358,9 @@ func loadTemplates(dir string) *template.Template {
 		},
 		"formatCW": func(cw int) string {
 			return fmt.Sprintf("CW_%02d", cw)
+		},
+		"cwLink": func(cw CW) string {
+			return cw.Path()
 		},
 		"pathPrefix": func(s string) string {
 			return filepath.Join("mm", s)

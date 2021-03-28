@@ -3,11 +3,11 @@
 <head>
     <title>CW {{.Week}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href="static/style.css" rel="stylesheet" type="text/css" />
-    <link rel="icon" type="image/ico" href="favicon.ico">
-    <link rel="apple-touch-icon" href="favicon.ico">
+    <link href="/static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" type="image/ico" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/favicon.ico">
 
-    <script src="static/js/elevator.min.js"></script>
+    <script src="/static/js/elevator.min.js"></script>
 </head>
 
 <body>
@@ -49,8 +49,8 @@
                 {{range .Maimais.Maimais}}
                 <div class="meme card">
                     <p>{{.FileName}}</p>
-                    <a href="{{pathPrefix (.Href)}}"  target="_blank" rel="noopener noreferrer">
-                        <img src="{{pathPrefix (.Href)}}" loading="lazy" class="maimai"  />
+                    <a href="/{{pathPrefix (.Href)}}"  target="_blank" rel="noopener noreferrer">
+                        <img src="/{{pathPrefix (.Href)}}" loading="lazy" class="maimai"  />
                     </a>
                 </div>
                 {{end}}
@@ -59,7 +59,7 @@
         <div class="elevator-button">Back to Top</div>
     </main>
 
-    <script src="static/js/script.js"></script>
+    <script src="/static/js/script.js"></script>
 </body>
 
 </html>

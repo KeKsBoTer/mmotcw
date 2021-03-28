@@ -54,8 +54,8 @@ document.querySelectorAll(".chartContainer").forEach(e => observer.observe(e));
 window.onload = function () {
     new Elevator({
         element: document.querySelector('.elevator-button'),
-        mainAudio: 'static/sound/elevator.mp3',
-        endAudio: 'static/sound/ding.mp3'
+        mainAudio: '/static/sound/elevator.mp3',
+        endAudio: '/static/sound/ding.mp3'
     });
     for (var img of document.getElementsByClassName('maimai')) {
         if (img.complete) {
@@ -95,7 +95,7 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('static/js/sw.js').then(function (registration) {
+    navigator.serviceWorker.register('/static/js/sw.js').then(function (registration) {
         registration.pushManager.getSubscription().then((subscription) => {
             if (!subscription) {
                 subscribe(registration);

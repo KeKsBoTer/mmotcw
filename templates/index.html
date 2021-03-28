@@ -48,7 +48,7 @@
         </div>
         {{range $week_index, $bla := .Weeks}}
         <div class="week">
-            <a href="{{formatCW .CW.Week}}" class="weekLink">
+            <a href="{{cwLink .CW}}" class="weekLink">
                 <h2>Week {{.CW.Week}}</h2>
             </a>
             {{if and (eq $week_index 0) $bla.CanVote}}
