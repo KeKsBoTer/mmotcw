@@ -334,12 +334,13 @@ func createRouter(templates *template.Template, source MaimaiSource, sub *Subscr
 	return r
 }
 
-func readFlags() (string, int, string) {
+func readFlags() (string, int, string, bool) {
 	var directory = flag.String("dir", ".", "the maimai directory")
 	var port = flag.Int("port", 8080, "port to run on")
 	var subsDir = flag.String("subsdir", "/var/lib/mmotcw", "directory containing subscriptions, pub and priv-key")
+	var noCacheInit = flag.Bool("no-cache-init", false, "Don't initialize image cache")
 	flag.Parse()
-	return *directory, *port, *subsDir
+	return *directory, *port, *subsDir, *noCacheInit
 }
 
 // loadTemplates reads all .html files as templates from given directory
@@ -382,7 +383,7 @@ func main() {
 	if os.Getenv("DEBUG") == "true" {
 		log = log.WithDebug()
 	}
-	miamaiDir, port, subsDir := readFlags()
+	miamaiDir, port, subsDir, skipCacheInit := readFlags()
 
 	ImgCache.dir = miamaiDir
 
@@ -401,9 +402,11 @@ func main() {
 	router := createRouter(templates, source, sub)
 	http.Handle("/", router)
 
-	err = InitCache(source)
-	if err != nil {
-		log.Fatal(err)
+	if !skipCacheInit {
+		err = InitCache(source)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	log.Infof("starting webserver on http://localhost:%d", port)
