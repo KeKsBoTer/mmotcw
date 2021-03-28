@@ -334,11 +334,12 @@ func createRouter(templates *template.Template, source MaimaiSource, sub *Subscr
 	return r
 }
 
-func readFlags() (string, int) {
+func readFlags() (string, int, string) {
 	var directory = flag.String("dir", ".", "the maimai directory")
 	var port = flag.Int("port", 8080, "port to run on")
+	var subsDir = flag.String("subsdir", "/var/lib/mmotcw", "directory containing subscriptions, pub and priv-key")
 	flag.Parse()
-	return *directory, *port
+	return *directory, *port, *subsDir
 }
 
 // loadTemplates reads all .html files as templates from given directory
@@ -381,14 +382,14 @@ func main() {
 	if os.Getenv("DEBUG") == "true" {
 		log = log.WithDebug()
 	}
-	miamaiDir, port := readFlags()
+	miamaiDir, port, subsDir := readFlags()
 
 	ImgCache.dir = miamaiDir
 
 	sub, err := NewSubscriptions(
-		"/var/lib/mmotcw/sub_key",
-		"/var/lib/mmotcw/sub_key.pub",
-		"/var/lib/mmotcw/subscriptions",
+		subsDir+"/sub_key",
+		subsDir+"/sub_key.pub",
+		subsDir+"/subscriptions",
 	)
 	if err != nil {
 		log.Fatal(err)
