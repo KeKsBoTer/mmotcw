@@ -387,7 +387,7 @@ func main() {
 
 	ImgCache.dir = miamaiDir
 
-	sub, err := NewSubscriptions(
+	sub, err := ReadSubscriptions(
 		subsDir+"/sub_key",
 		subsDir+"/sub_key.pub",
 		subsDir+"/subscriptions",
