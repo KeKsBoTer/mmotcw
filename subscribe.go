@@ -21,8 +21,8 @@ type Subscriptions struct {
 	subscriptionsFile string
 }
 
-// NewSubscriptions reads files or creates them if necessary
-func NewSubscriptions(privateKeyFile, publicKeyFile, subscriptionsFile string) (*Subscriptions, error) {
+// ReadSubscriptions reads files or creates them if necessary
+func ReadSubscriptions(privateKeyFile, publicKeyFile, subscriptionsFile string) (*Subscriptions, error) {
 	fPub, err := os.OpenFile(publicKeyFile, os.O_RDWR|os.O_CREATE, 0666)
 	if err != nil {
 		return nil, err
@@ -70,9 +70,11 @@ func NewSubscriptions(privateKeyFile, publicKeyFile, subscriptionsFile string) (
 	}
 
 	subFile, err := os.OpenFile(subscriptionsFile, os.O_RDWR|os.O_CREATE, 0666)
+	log.Info("opened subs")
 	if err != nil {
 		return nil, err
 	}
+	defer subFile.Close()
 
 	subs := Subscriptions{
 		privateKey:        privateKey,
@@ -86,17 +88,22 @@ func NewSubscriptions(privateKeyFile, publicKeyFile, subscriptionsFile string) (
 		subFile.Truncate(0)
 		subFile.Seek(0, 0)
 	} else {
-		subBytes, err := io.ReadAll(subFile)
+		subsBytes, err := io.ReadAll(subFile)
 		if err != nil {
 			return nil, fmt.Errorf("cannot read subscriptions %s: %v", subscriptionsFile, err)
 		}
-		for _, sub := range strings.Split(string(subBytes), "\n") {
-			subs.Add([]byte(sub))
+		// trim to remove empty last line
+		for _, subJson := range strings.Split(strings.Trim(string(subsBytes), " \n\r"), "\n") {
+			sub := webpush.Subscription{}
+			err := json.Unmarshal([]byte(subJson), &sub)
+			if err != nil {
+				return nil, fmt.Errorf("invalid subscription body '%v', got error: %v", subJson, err)
+			}
+			subs.subscriptions = append(subs.subscriptions, sub)
 		}
 	}
 
 	return &subs, nil
-
 }
 
 // Add adds a subscription
@@ -111,6 +118,7 @@ func (s *Subscriptions) Add(jsonBytes []byte) error {
 	if err != nil {
 		return err
 	}
+	defer f.Close()
 	f.Write(jsonBytes)
 	f.WriteString("\n")
 
