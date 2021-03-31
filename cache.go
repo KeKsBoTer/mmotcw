@@ -52,10 +52,10 @@ func (c *PreviewCache) GetImage(imgPath string) (CachedImage, error) {
 func (c *PreviewCache) cacheImage(imgPath string) error {
 	filePath := filepath.Join(c.dir, imgPath)
 	imgFile, err := os.OpenFile(filePath, os.O_RDONLY, os.ModePerm)
-	defer imgFile.Close()
 	if err != nil {
 		return err
 	}
+	defer imgFile.Close()
 	img, _, err := image.Decode(imgFile)
 	if err != nil {
 		return err

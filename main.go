@@ -94,7 +94,7 @@ func userContent(template template.Template, source MaimaiSource) http.HandlerFu
 		for w := range weeks {
 			filtered := []UserMaimai{}
 			for _, m := range weeks[w].Maimais {
-				if strings.ToLower(string(m.User)) == strings.ToLower(user) {
+				if strings.EqualFold(string(m.User), user) {
 					filtered = append(filtered, m)
 					empty = false
 				}
@@ -172,7 +172,7 @@ func year(template template.Template, source MaimaiSource) http.HandlerFunc {
 			l++
 		}
 		splitCw := make([][]string, l)
-		for i, _ := range splitCw {
+		for i := range splitCw {
 			splitCw[i] = cwFiller[i*columns : min((i+1)*columns, len(cwFiller)-1)]
 		}
 
