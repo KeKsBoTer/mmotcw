@@ -146,6 +146,50 @@ func week(template template.Template, source MaimaiSource) http.HandlerFunc {
 	}
 }
 
+func year(template template.Template, source MaimaiSource) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		year, _ := strconv.Atoi(mux.Vars(r)["year"])
+		CWs, err := source.GetCWsOfYear(year)
+		if err != nil {
+			log.Error(err)
+			httpError(w, http.StatusInternalServerError)
+			return
+		}
+
+		firstCW := CWs[0]
+		firstCwNr, err := strconv.Atoi(firstCW[len(firstCW)-2:])
+		if err != nil {
+			log.Error(err)
+			httpError(w, http.StatusInternalServerError)
+			return
+		}
+		cwFiller := make([]string, firstCwNr%10)
+		cwFiller = append(cwFiller, CWs...)
+
+		const columns = 10
+		l := len(cwFiller) / columns
+		if len(cwFiller)%columns != 0 {
+			l++
+		}
+		splitCw := make([][]string, l)
+		for i, _ := range splitCw {
+			splitCw[i] = cwFiller[i*columns : min((i+1)*columns, len(cwFiller)-1)]
+		}
+
+		err = template.Execute(w, struct {
+			Year  int
+			Weeks [][]string
+		}{
+			Year:  year,
+			Weeks: splitCw,
+		})
+		if err != nil {
+			log.Error(err)
+			return
+		}
+	}
+}
+
 func vote(source MaimaiSource) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodPost {
@@ -328,7 +372,9 @@ func createRouter(templates *template.Template, source MaimaiSource, sub *Subscr
 
 	r.HandleFunc("/{user:[a-z]+}", userContent(*templates.Lookup("user.html"), source))
 
-	r.HandleFunc("/{year:202[0-9]}/CW_{week:[0-9]+}", week(*templates.Lookup("week.html"), source))
+	r.HandleFunc("/{year:202[0-9]}/", year(*templates.Lookup("year.html"), source))
+
+	r.HandleFunc("/{year:202[0-9]}/CW_{week:[0-9]+}/", week(*templates.Lookup("week.html"), source))
 
 	return r
 }
