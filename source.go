@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 )
 
@@ -58,4 +59,19 @@ func (m MaimaiSource) GetVoteResults(cw CW) (UserVotes, error) {
 		return votes, nil
 	}
 	return nil, err
+}
+
+func (m MaimaiSource) GetCWsOfYear(year int) ([]string, error) {
+	yearPath := filepath.Join(string(m), strconv.Itoa(year))
+	files, err := os.ReadDir(yearPath)
+	if err != nil {
+		return nil, err
+	}
+	CWs := make([]string, 0)
+	for _, dirEntry := range files {
+		if dirEntry.IsDir() && strings.HasPrefix(dirEntry.Name(), "CW_") {
+			CWs = append(CWs, dirEntry.Name())
+		}
+	}
+	return CWs, nil
 }

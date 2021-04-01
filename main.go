@@ -94,7 +94,7 @@ func userContent(template template.Template, source MaimaiSource) http.HandlerFu
 		for w := range weeks {
 			filtered := []UserMaimai{}
 			for _, m := range weeks[w].Maimais {
-				if strings.ToLower(string(m.User)) == strings.ToLower(user) {
+				if strings.EqualFold(string(m.User), user) {
 					filtered = append(filtered, m)
 					empty = false
 				}
@@ -123,8 +123,7 @@ func userContent(template template.Template, source MaimaiSource) http.HandlerFu
 func week(template template.Template, source MaimaiSource) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		week, _ := strconv.Atoi(mux.Vars(r)["week"])
-
-		year := getYear(r)
+		year, _ := strconv.Atoi(mux.Vars(r)["year"])
 
 		maimais, err := source.GetMaimaisForCW(CW{Year: year, Week: week})
 		if err != nil {
@@ -139,6 +138,50 @@ func week(template template.Template, source MaimaiSource) http.HandlerFunc {
 		}{
 			Maimais: *maimais,
 			Week:    week,
+		})
+		if err != nil {
+			log.Error(err)
+			return
+		}
+	}
+}
+
+func year(template template.Template, source MaimaiSource) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		year, _ := strconv.Atoi(mux.Vars(r)["year"])
+		CWs, err := source.GetCWsOfYear(year)
+		if err != nil {
+			log.Error(err)
+			httpError(w, http.StatusInternalServerError)
+			return
+		}
+
+		firstCW := CWs[0]
+		firstCwNr, err := strconv.Atoi(firstCW[len(firstCW)-2:])
+		if err != nil {
+			log.Error(err)
+			httpError(w, http.StatusInternalServerError)
+			return
+		}
+		cwFiller := make([]string, firstCwNr%10)
+		cwFiller = append(cwFiller, CWs...)
+
+		const columns = 10
+		l := len(cwFiller) / columns
+		if len(cwFiller)%columns != 0 {
+			l++
+		}
+		splitCw := make([][]string, l)
+		for i := range splitCw {
+			splitCw[i] = cwFiller[i*columns : min((i+1)*columns, len(cwFiller)-1)]
+		}
+
+		err = template.Execute(w, struct {
+			Year  int
+			Weeks [][]string
+		}{
+			Year:  year,
+			Weeks: splitCw,
 		})
 		if err != nil {
 			log.Error(err)
@@ -329,7 +372,9 @@ func createRouter(templates *template.Template, source MaimaiSource, sub *Subscr
 
 	r.HandleFunc("/{user:[a-z]+}", userContent(*templates.Lookup("user.html"), source))
 
-	r.HandleFunc("/CW_{week:[0-9]+}", week(*templates.Lookup("week.html"), source))
+	r.HandleFunc("/{year:202[0-9]}/", year(*templates.Lookup("year.html"), source))
+
+	r.HandleFunc("/{year:202[0-9]}/CW_{week:[0-9]+}/", week(*templates.Lookup("week.html"), source))
 
 	return r
 }
@@ -360,6 +405,9 @@ func loadTemplates(dir string) *template.Template {
 		},
 		"formatCW": func(cw int) string {
 			return fmt.Sprintf("CW_%02d", cw)
+		},
+		"cwLink": func(cw CW) string {
+			return cw.Path()
 		},
 		"pathPrefix": func(s string) string {
 			return filepath.Join("mm", s)

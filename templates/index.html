@@ -48,7 +48,7 @@
         </div>
         {{range $week_index, $bla := .Weeks}}
         <div class="week">
-            <a href="{{formatCW .CW.Week}}" class="weekLink">
+            <a href="{{cwLink .CW}}" class="weekLink">
                 <h2>Week {{.CW.Week}}</h2>
             </a>
             {{if and (eq $week_index 0) $bla.CanVote}}
@@ -86,7 +86,7 @@
                         <tr>
                             <td><input type="submit" value="Abstimmen!"></td>
                         </tr>
-                        
+
                         <tr>
                             <td><small style="color: darkgrey;">{{len .UserVotes}} haben bereits abgestimmt</small></td>
                         </tr>
@@ -97,7 +97,7 @@
             <div class="maimais">
                 {{if .FinishedVoting }}
                 <div class="results card">
-                    <h1>Ergebnisse  {{formatCW .CW.Week}}</h1>
+                    <h1>Ergebnisse {{formatCW .CW.Week}}</h1>
                     <table class="votesTable">
                         <tbody>
                             <tr>
@@ -112,10 +112,8 @@
                             {{end}}
                         </tbody>
                     </table>
-                    <div class="chartContainer" 
-                        style="height: 280px; width: calc(100% - 20px); margin:10px;"
-                        data="{{toJson (.Votes)}}"
-                    >
+                    <div class="chartContainer" style="height: 280px; width: calc(100% - 20px); margin:10px;"
+                        data="{{toJson (.Votes)}}">
                     </div>
                 </div>
                 {{end}}
@@ -132,8 +130,7 @@
                 {{range .Maimais}}
                 <div class="meme card">
                     <a href="{{pathPrefix (.Href)}}" target="_blank" rel="noopener noreferrer">
-                        <img src="{{pathPrefix (.Href)}}" class="maimai"
-                            height="{{(.Preview).Size.Y}}"
+                        <img src="{{pathPrefix (.Href)}}" class="maimai" height="{{(.Preview).Size.Y}}"
                             width="{{(.Preview).Size.X}}"
                             style="background-image: url('data:image/jpg;base64,{{(.Preview).Image}}')"
                             loading="lazy" />

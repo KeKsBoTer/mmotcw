@@ -23,8 +23,7 @@
                 {{range .Maimais}}
                 <div class="meme card">
                     <a href="{{pathPrefix (.Href)}}" target="_blank" rel="noopener noreferrer">
-                        <img src="{{pathPrefix (.Href)}}" class="maimai"
-                            height="{{(.Preview).Size.Y}}"
+                        <img src="{{pathPrefix (.Href)}}" class="maimai" height="{{(.Preview).Size.Y}}"
                             width="{{(.Preview).Size.X}}"
                             style="background-image: url('data:image/jpg;base64,{{(.Preview).Image}}')"
                             loading="lazy" />

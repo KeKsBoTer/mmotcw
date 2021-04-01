@@ -30,7 +30,7 @@ func (w *Week) SortMaimais() {
 func (w Week) UserUploads(user string) int {
 	uploads := 0
 	for _, m := range w.Maimais {
-		if strings.ToLower(string(m.User)) == strings.ToLower(user) {
+		if strings.EqualFold(string(m.User), user) {
 			uploads++
 		}
 	}

@@ -60,9 +60,9 @@ func getYear(r *http.Request) int {
 	return time.Now().Year()
 }
 
-// Not used atm
-func getDate() (string, string) {
-
-	year, cw := time.Now().ISOWeek()
-	return strconv.Itoa(year), strconv.Itoa(cw)
+func min(x, y int) int {
+	if x < y {
+		return x
+	}
+	return y
 }
