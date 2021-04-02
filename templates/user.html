@@ -21,7 +21,7 @@
             <h2>Week {{.CW.Week}}</h2>
             <div class="maimais">
                 {{range .Maimais}}
-                <div class="meme card">
+                <div class="meme card {{.User}}">
                     <a href="{{pathPrefix (.Href)}}" target="_blank" rel="noopener noreferrer">
                         <img src="{{pathPrefix (.Href)}}" class="maimai" height="{{(.Preview).Size.Y}}"
                             width="{{(.Preview).Size.X}}"

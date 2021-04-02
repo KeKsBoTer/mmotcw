@@ -92,14 +92,16 @@ func ReadSubscriptions(privateKeyFile, publicKeyFile, subscriptionsFile string) 
 		if err != nil {
 			return nil, fmt.Errorf("cannot read subscriptions %s: %v", subscriptionsFile, err)
 		}
-		// trim to remove empty last line
-		for _, subJson := range strings.Split(strings.Trim(string(subsBytes), " \n\r"), "\n") {
-			sub := webpush.Subscription{}
-			err := json.Unmarshal([]byte(subJson), &sub)
-			if err != nil {
-				return nil, fmt.Errorf("invalid subscription body '%v', got error: %v", subJson, err)
+		if len(subsBytes) != 0 {
+			// trim to remove empty last line
+			for _, subJson := range strings.Split(strings.Trim(string(subsBytes), " \n\r"), "\n") {
+				sub := webpush.Subscription{}
+				err := json.Unmarshal([]byte(subJson), &sub)
+				if err != nil {
+					return nil, fmt.Errorf("invalid subscription body '%v', got error: %v", subJson, err)
+				}
+				subs.subscriptions = append(subs.subscriptions, sub)
 			}
-			subs.subscriptions = append(subs.subscriptions, sub)
 		}
 	}
 

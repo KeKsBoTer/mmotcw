@@ -10,6 +10,7 @@ import (
 	_ "image/jpeg"
 	_ "image/png"
 	"io"
+	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -50,8 +51,15 @@ func GetMaimais(source MaimaiSource, year int) ([]Week, error) {
 }
 
 func index(template template.Template, source MaimaiSource, s *Subscriptions) http.HandlerFunc {
+	fq, _ := os.Open("templates/quotes.txt")
+	defer fq.Close()
+	q, _ := io.ReadAll(fq)
+	quotes := strings.Split(string(q), "\n")
+
+	users := []string{"Simon", "Matthis", "Fabio", "Jannis", "Lena", "Christian", "Daniel", "Lorenz"}
 
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		user, _, _ := r.BasicAuth()
 		year := getYear(r)
 		maimais, err := GetMaimais(source, year)
@@ -64,14 +72,29 @@ func index(template template.Template, source MaimaiSource, s *Subscriptions) ht
 			template = *loadTemplates("templates").Lookup("index.html")
 		}
 
+		otherYear := 2020
+		if year == 2020 {
+			otherYear = 2021
+		}
+
+		rand.Seed(int64(time.Now().Day()))
+
 		err = template.Execute(w, struct {
 			Weeks         []Week
 			User          string
 			PushPublicKey string
+			Year          int
+			OtherYear     int
+			Quote         string
+			QuoteAuthor   string
 		}{
 			Weeks:         maimais,
 			User:          user,
 			PushPublicKey: s.publicKey,
+			Year:          year,
+			OtherYear:     otherYear,
+			Quote:         quotes[rand.Intn(len(quotes))],
+			QuoteAuthor:   users[rand.Intn(len(users))],
 		})
 		if err != nil {
 			fmt.Println(err)
@@ -82,6 +105,7 @@ func index(template template.Template, source MaimaiSource, s *Subscriptions) ht
 
 func userContent(template template.Template, source MaimaiSource) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
 		user := mux.Vars(r)["user"]
 		year := getYear(r)
 		weeks, err := GetMaimais(source, year)
@@ -410,9 +434,6 @@ func loadTemplates(dir string) *template.Template {
 		"formatCW": func(cw int) string {
 			return fmt.Sprintf("CW_%02d", cw)
 		},
-		"cwLink": func(cw CW) string {
-			return cw.Path()
-		},
 		"pathPrefix": func(s string) string {
 			return filepath.Join("mm", s)
 		},
@@ -469,8 +490,9 @@ func main() {
 		}()
 	}
 
-	log.Infof("starting webserver on http://localhost:%d", port)
-	if err := http.ListenAndServe(":"+strconv.Itoa(port), nil); err != nil {
+	serveOn := fmt.Sprintf("localhost:%d", port)
+	log.Infof("starting webserver on http://%s", serveOn)
+	if err := http.ListenAndServe(serveOn, nil); err != nil {
 		log.Fatal(err)
 	}
 }

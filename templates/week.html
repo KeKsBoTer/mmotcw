@@ -31,27 +31,32 @@
                 {{if .Maimais.Votes }}
                 <div class="results card">
                     <h1>Ergebnisse CW_{{.Week}}</h1>
-                    <table class="votesTable">
-                        <tbody>
-                            <tr>
-                                <th>Votes</th>
-                                <th>MaiMai</th>
-                            </tr>
-                            {{range $index, $vote := .Maimais.Votes}}
-                            <tr>
-                                <td>{{$vote.Votes}}</td>
-                                <td><a href="{{$vote.Path}}">{{$vote.FileName}}</a></td>
-                            </tr>
-                            {{end}}
-                        </tbody>
+                    <table class="votesTable"></table>
+                    <thead>
+                        <tr>
+                            <th>Votes</th>
+                            <th>MaiMai</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range $index, $vote := .Maimais.Votes}}
+                        <tr>
+                            <td>{{$vote.Votes}}</td>
+                            <td><a href="{{$vote.Path}}">{{$vote.FileName}}</a></td>
+                        </tr>
+                        {{end}}
+                    </tbody>
                     </table>
                 </div>
                 {{end}}
 
                 {{range .Maimais.Maimais}}
-                <div class="meme card">
+                <div class="meme card {{.User}}">
                     <a href="/{{pathPrefix (.Href)}}" target="_blank" rel="noopener noreferrer">
-                        <img src="/{{pathPrefix (.Href)}}" loading="lazy" class="maimai" />
+                        <img src="/{{pathPrefix (.Href)}}" class="maimai" height="{{(.Preview).Size.Y}}"
+                            width="{{(.Preview).Size.X}}"
+                            style="background-image: url('data:image/jpg;base64,{{(.Preview).Image}}')"
+                            loading="lazy" />
                     </a>
                     <div class="overlay">
                         <small>{{formatTime .UploadTime}}</small>

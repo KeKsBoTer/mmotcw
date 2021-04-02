@@ -25,7 +25,7 @@
         </a>
     </header>
     <main>
-        <div class="links">
+        <div class="links block">
             <ul>
                 <li id="{{.User}}">
                     <a href="{{.User}}">
@@ -33,18 +33,22 @@
                     </a>
                 </li>
                 <li id="last-year">
-                    <a href="?year=2020">
-                        2020 Maimais
+                    <a href="?year={{.OtherYear}}">
+                        {{.OtherYear}} Maimais
                     </a>
                 </li>
                 <li>
-                    <a href="/2021/">
+                    <a href="/{{.Year}}/">
                         Übersicht
                     </a>
                 </li>
             </ul>
         </div>
-        <div class="uploader">
+        <div class="quote block">
+            <small>Weisheit des Tages</small>
+            <quoteblock>„{{.Quote}}"</quoteblock><br> <span class="author">- {{.QuoteAuthor}}</span>
+        </div>
+        <div class="uploader block">
             <form action="upload" method="post" enctype="multipart/form-data">
                 <h2>Maimai pfostieren</h2>
                 <input type="file" name="fileToUpload" id="fileToUpload">
@@ -53,7 +57,7 @@
         </div>
         {{range $week_index, $bla := .Weeks}}
         <div class="week">
-            <a href="{{cwLink .CW}}/" class="weekLink">
+            <a href="{{.CW.Path}}/" class="weekLink">
                 <h2>Week {{.CW.Week}}</h2>
             </a>
             {{if and (eq $week_index 0) $bla.CanVote}}
@@ -104,11 +108,13 @@
                 <div class="results card">
                     <h1>Ergebnisse {{formatCW .CW.Week}}</h1>
                     <table class="votesTable">
-                        <tbody>
+                        <thead>
                             <tr>
                                 <th>Votes</th>
                                 <th>MaiMai</th>
                             </tr>
+                        </thead>
+                        <tbody>
                             {{range $index, $vote := .Votes}}
                             <tr>
                                 <td>{{$vote.Votes}}</td>
@@ -133,7 +139,7 @@
                 {{end}}
 
                 {{range .Maimais}}
-                <div class="meme card">
+                <div class="meme card {{.User}}">
                     <a href="{{pathPrefix (.Href)}}" target="_blank" rel="noopener noreferrer">
                         <img src="{{pathPrefix (.Href)}}" class="maimai" height="{{(.Preview).Size.Y}}"
                             width="{{(.Preview).Size.X}}"
