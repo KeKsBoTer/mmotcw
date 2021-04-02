@@ -52,10 +52,13 @@ header .title h1 {
 header .title small {
     font-size: min(4vw, 1.8em);
     text-shadow: 0 0px 7px rgba(255, 255, 255, 0.5);
+    margin: 10px 0;
 }
 
 header h1 {
-    font-size: min(8vw, 3em);
+    font-size: min(8vw, 2em);
+    text-align: center;
+    margin-bottom: 10px;
 }
 
 @media screen and (max-width:700px) {
@@ -195,7 +198,8 @@ header h1 {
     float: right;
 }
 
-input[type='submit'] {
+input[type='submit'],
+button {
     border-radius: 5px;
     overflow: hidden;
     font-family: 'Courier New', Courier, monospace;
@@ -203,6 +207,7 @@ input[type='submit'] {
     background-color: transparent;
     border: 1px solid white;
     color: white;
+    cursor: pointer;
 }
 
 .uploader form {
@@ -496,4 +501,19 @@ a:hover {
 
 .cw-table td:hover {
     background-color: lightskyblue;
+}
+
+.adminForm {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.adminForm button {
+    margin-right: 20px;
+    margin-bottom: 20px;
+}
+
+.adminForm button:last-child {
+    margin-right: 0;
 }
