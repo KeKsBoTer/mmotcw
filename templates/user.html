@@ -28,7 +28,10 @@
                             style="background-image: url('data:image/jpg;base64,{{(.Preview).Image}}')"
                             loading="lazy" />
                     </a>
-                    <p>{{.FileName}}</p>
+                    <div class="overlay">
+                        <small>{{formatTime .UploadTime}}</small>
+                        <p>{{.FileName}}</p>
+                    </div>
                 </div>
                 {{end}}
             </div>

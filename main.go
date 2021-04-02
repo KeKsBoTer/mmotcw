@@ -461,10 +461,12 @@ func main() {
 	http.Handle("/", router)
 
 	if !skipCacheInit {
-		err = InitCache(source)
-		if err != nil {
-			log.Fatal(err)
-		}
+		go func() {
+			err = InitCache(source)
+			if err != nil {
+				log.Fatal(err)
+			}
+		}()
 	}
 
 	log.Infof("starting webserver on http://localhost:%d", port)
