@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Maimai is an interface for all uploaded Maimais (user uploads and templates)
@@ -22,6 +23,9 @@ type UserMaimai struct {
 	// the file name of the maimai
 	User UserName
 
+	// UploadTime is the upload date
+	UploadTime time.Time
+
 	// number in current week (unique)
 	Counter int
 
@@ -36,7 +40,7 @@ type UserMaimai struct {
 }
 
 // NewUserMaimai creates a Maimai object from a filename
-func NewUserMaimai(fileName string, cw CW) (*UserMaimai, error) {
+func NewUserMaimai(fileName string, uploadTime time.Time, cw CW) (*UserMaimai, error) {
 	err := fmt.Errorf("%s is not of expected file name format for a maimai", fileName)
 	parts := strings.Split(fileName, ".")
 	if len(parts) != 2 {
@@ -81,6 +85,7 @@ func NewUserMaimai(fileName string, cw CW) (*UserMaimai, error) {
 	}
 	return &UserMaimai{
 		User:        UserName(userName),
+		UploadTime:  uploadTime,
 		Counter:     counter,
 		UserCounter: userCounter,
 		ImageType:   imageType,

@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -25,7 +26,7 @@ func (m MaimaiSource) GetMaimaisForCW(cw CW) (*Week, error) {
 	for _, img := range imgFiles {
 
 		if !strings.HasPrefix(img.Name(), "template.") {
-			mm, err := NewUserMaimai(img.Name(), cw)
+			mm, err := NewUserMaimai(img.Name(), img.ModTime(), cw)
 			if err != nil {
 				log.Errorf("error in %s/%s: %v", cw.Path(), img.Name(), err)
 				continue
@@ -61,16 +62,21 @@ func (m MaimaiSource) GetVoteResults(cw CW) (UserVotes, error) {
 	return nil, err
 }
 
-func (m MaimaiSource) GetCWsOfYear(year int) ([]string, error) {
-	yearPath := filepath.Join(string(m), strconv.Itoa(year))
+func (m MaimaiSource) GetCWsOfYear(year int) ([]CW, error) {
+	yearS := strconv.Itoa(year)
+	yearPath := filepath.Join(string(m), yearS)
 	files, err := os.ReadDir(yearPath)
 	if err != nil {
 		return nil, err
 	}
-	CWs := make([]string, 0)
+	CWs := make([]CW, 0)
 	for _, dirEntry := range files {
 		if dirEntry.IsDir() && strings.HasPrefix(dirEntry.Name(), "CW_") {
-			CWs = append(CWs, dirEntry.Name())
+			if cw, err := CWFromPath(path.Join(yearS, dirEntry.Name())); err == nil {
+				CWs = append(CWs, *cw)
+			} else {
+				log.Error(err)
+			}
 		}
 	}
 	return CWs, nil

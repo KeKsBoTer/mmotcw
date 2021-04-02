@@ -17,7 +17,7 @@ background {
     height: 600px;
     position: absolute;
     z-index: -1;
-    
+
 }
 
 header {
@@ -38,20 +38,26 @@ header .title {
 }
 
 header .title h1 {
-    font-size: 10em;
+    font-size: 7em;
     margin: 0px;
     margin-bottom: -20px;
-    text-shadow: 0 0 100px rgba(0, 0, 0,.9);
+    color: white;
+    text-stroke: 3px black;
+    -webkit-text-stroke: 3px black;
+    font-family: Impact, sans-serif;
+    letter-spacing: -.06em;
 }
 
 header .title small {
     font-size: 1.8em;
-    text-shadow: 0 0px  7px rgba(255, 255, 255, 0.5);
+    text-shadow: 0 0px 7px rgba(255, 255, 255, 0.5);
 }
 
-@media screen and (max-width:700px){
+@media screen and (max-width:700px) {
     header .title h1 {
-        font-size: 20vw;
+        font-size: 16vw;
+        margin: .01vw;
+        margin-top: .5em;
     }
 
     header .title small {
@@ -63,7 +69,8 @@ header .title small {
 .links ul {
     font-family: 'Courier New', Courier, monospace;
     background: white;
-    padding: 20px 10px;
+    padding: 3px;
+    padding-top: 8px;
     text-align: left;
     border: 0.5px dashed grey;
     border-radius: 7px 5px;
@@ -71,15 +78,28 @@ header .title small {
     display: flex;
     align-items: baseline;
     flex-wrap: wrap;
-    justify-content: space-evenly;
+    justify-content: space-around;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
 }
 
 .links ul li {
     color: black;
-    margin-left: 70px;
-    margin-right: 40px;
-    list-style-image: url('img/taube.png');
+    list-style-type: none;
+}
+
+.links ul li::before {
+    content: "";
+    background-image: url("img/taube.png");
+    background-size: 70%;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: rgb(152, 151, 172);
+    height: 60px;
+    width: 60px;
+    position: relative;
+    display: inline-block;
+    border-radius: 50%;
+    overflow: hidden;
 }
 
 .links ul li:last-child {
@@ -95,30 +115,34 @@ header .title small {
 }
 
 
-@media screen and (max-width:600px){
-    .links ul{
+@media screen and (max-width:600px) {
+    .links ul {
         flex-direction: column;
     }
 }
 
-#simon {
-    list-style-image: url('img/theboys/simon.png');
+#simon:before {
+    background-image: url('img/theboys/simon.png');
 }
 
-#matthis {
-    list-style-image: url('img/theboys/matthis.png');
+#matthis:before {
+    background-image: url('img/theboys/matthis.png');
 }
 
-#jannis {
-    list-style-image: url('img/theboys/jannis.png');
+#jannis:before {
+    background-image: url('img/theboys/jannis.png');
 }
 
-#daniel {
-    list-style-image: url('img/theboys/daniel.png');
+#daniel:before {
+    background-image: url('img/theboys/daniel.png');
 }
 
-#fabio {
-    list-style-image: url('img/theboys/fabio.png');
+#fabio:before {
+    background-image: url('img/theboys/fabio.png');
+}
+
+#last-year:before {
+    background-image: url('img/merkel.png');
 }
 
 .uploader {
@@ -242,7 +266,7 @@ p {
     overflow: hidden;
 }
 
-.meme:hover p {
+.meme:hover .overlay {
     opacity: 1;
 }
 
@@ -266,6 +290,7 @@ p {
     .week a {
         width: 100%;
     }
+
     .week img {
         width: 100%;
         height: auto;
@@ -273,14 +298,23 @@ p {
 }
 
 
-.meme p {
+.meme .overlay {
     position: absolute;
     bottom: 5px;
-    padding: 3px 5px;
-    background-color: black;
     opacity: 0;
     transition: opacity 0.2s;
     color: white;
+}
+
+.meme .overlay p {
+    background-color: black;
+    padding: 3px 5px;
+}
+.meme .overlay small {
+    opacity: .5;
+    margin-left: 5px;
+    padding: 1px 3px;
+    background-color: black;
 }
 
 .navigate {
@@ -325,7 +359,27 @@ a:hover {
     margin: 3px;
 }
 
-.elevator-button{
+.elevator-button {
     display: block;
     margin: 20px;
+}
+
+.cw-table {
+    margin: 0 auto;
+    border-spacing: 20px;
+    empty-cells: hide;
+}
+
+.cw-table td {
+    text-align: center;
+    width: 50px;
+    height: 50px;
+    background-color: rgb(86, 85, 97);
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+
+.cw-table td:hover {
+    background-color: lightskyblue;
 }

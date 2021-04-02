@@ -26,11 +26,13 @@
         <h1>Corona Year {{.Year}}</h1>
     </header>
     <main>
-        <table align="center">
+        <table class="cw-table">
             {{range.Weeks}}
             <tr>
                 {{range .}}
-                <td><a href="{{.}}/">{{.}}</a></td>
+                <td>
+                    {{if ne .Week 0}} <a href="../{{.Path}}/">{{.Week}}</a>{{end}}
+                </td>
                 {{end}}
             </tr>
             {{end}}

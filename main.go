@@ -127,8 +127,13 @@ func week(template template.Template, source MaimaiSource) http.HandlerFunc {
 
 		maimais, err := source.GetMaimaisForCW(CW{Year: year, Week: week})
 		if err != nil {
-			log.Error(err)
-			httpError(w, http.StatusInternalServerError)
+			switch err.(type) {
+			case *os.PathError:
+				httpError(w, http.StatusNotFound)
+			default:
+				log.Error(err)
+				httpError(w, http.StatusInternalServerError)
+			}
 			return
 		}
 
@@ -151,19 +156,18 @@ func year(template template.Template, source MaimaiSource) http.HandlerFunc {
 		year, _ := strconv.Atoi(mux.Vars(r)["year"])
 		CWs, err := source.GetCWsOfYear(year)
 		if err != nil {
-			log.Error(err)
-			httpError(w, http.StatusInternalServerError)
+			switch err.(type) {
+			case *os.PathError:
+				httpError(w, http.StatusNotFound)
+			default:
+				log.Error(err)
+				httpError(w, http.StatusInternalServerError)
+			}
 			return
 		}
 
 		firstCW := CWs[0]
-		firstCwNr, err := strconv.Atoi(firstCW[len(firstCW)-2:])
-		if err != nil {
-			log.Error(err)
-			httpError(w, http.StatusInternalServerError)
-			return
-		}
-		cwFiller := make([]string, firstCwNr%10)
+		cwFiller := make([]CW, firstCW.Week%10)
 		cwFiller = append(cwFiller, CWs...)
 
 		const columns = 10
@@ -171,14 +175,14 @@ func year(template template.Template, source MaimaiSource) http.HandlerFunc {
 		if len(cwFiller)%columns != 0 {
 			l++
 		}
-		splitCw := make([][]string, l)
+		splitCw := make([][]CW, l)
 		for i := range splitCw {
 			splitCw[i] = cwFiller[i*columns : min((i+1)*columns, len(cwFiller)-1)]
 		}
 
 		err = template.Execute(w, struct {
 			Year  int
-			Weeks [][]string
+			Weeks [][]CW
 		}{
 			Year:  year,
 			Weeks: splitCw,
@@ -400,8 +404,8 @@ func loadTemplates(dir string) *template.Template {
 			}
 			return votes
 		},
-		"add": func(a, b int) int {
-			return a + b
+		"add": func(a, b int) string {
+			return fmt.Sprintf("%02d", a+b)
 		},
 		"formatCW": func(cw int) string {
 			return fmt.Sprintf("CW_%02d", cw)
@@ -419,6 +423,12 @@ func loadTemplates(dir string) *template.Template {
 				return ""
 			}
 			return base64.RawStdEncoding.EncodeToString(b)
+		},
+		"formatTime": func(t time.Time) string {
+			w := t.Weekday()
+
+			weekdays := []string{"So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"}
+			return fmt.Sprintf("%s %s", weekdays[w], t.Format("15:03"))
 		},
 	}
 

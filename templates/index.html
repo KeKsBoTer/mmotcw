@@ -32,9 +32,14 @@
                         Meine Seite
                     </a>
                 </li>
+                <li id="last-year">
+                    <a href="?year=2020">
+                        2020 Maimais
+                    </a>
+                </li>
                 <li>
-                    <a href="/mail-notify-me/">
-                        Mail-Benachrichtigungen
+                    <a href="/2021/">
+                        Übersicht
                     </a>
                 </li>
             </ul>
@@ -135,7 +140,10 @@
                             style="background-image: url('data:image/jpg;base64,{{(.Preview).Image}}')"
                             loading="lazy" />
                     </a>
-                    <p>{{.FileName}}</p>
+                    <div class="overlay">
+                        <small>{{formatTime .UploadTime}}</small>
+                        <p>{{.FileName}}</p>
+                    </div>
                 </div>
                 {{end}}
             </div>
