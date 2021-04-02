@@ -50,10 +50,13 @@
 
                 {{range .Maimais.Maimais}}
                 <div class="meme card">
-                    <p>{{.FileName}}</p>
                     <a href="/{{pathPrefix (.Href)}}" target="_blank" rel="noopener noreferrer">
                         <img src="/{{pathPrefix (.Href)}}" loading="lazy" class="maimai" />
                     </a>
+                    <div class="overlay">
+                        <small>{{formatTime .UploadTime}}</small>
+                        <p>{{.FileName}}</p>
+                    </div>
                 </div>
                 {{end}}
             </div>
