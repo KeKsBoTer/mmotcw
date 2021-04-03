@@ -398,6 +398,7 @@ p {
     background-size: 65%;
     background-position: center;
     opacity: 0;
+    z-index: 10;
 }
 
 .card.meme:hover:before {
