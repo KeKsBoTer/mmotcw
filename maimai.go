@@ -52,37 +52,22 @@ func NewUserMaimai(fileName string, uploadTime time.Time, cw CW) (*UserMaimai, e
 	parts = strings.Split(name, "_")
 	var counter, userCounter int
 	var userName string
-	switch len(parts) {
-	case 1:
-		counter = -1
-		userName = parts[0]
-
-		userCounter = -1
-	case 2:
-		counter = -1
-		userName = parts[0]
-
-		userCounter, err = strconv.Atoi(parts[1])
-		if err != nil {
-			return nil, err
-		}
-	case 3:
-
-		counter, err = strconv.Atoi(parts[0])
-		if err != nil {
-			return nil, err
-		}
-
-		userName = parts[1]
-
-		userCounter, err = strconv.Atoi(parts[2])
-		if err != nil {
-			return nil, err
-		}
-	default:
-		// error!!
+	if len(parts) != 3 {
 		return nil, err
 	}
+
+	counter, err = strconv.Atoi(parts[0])
+	if err != nil {
+		return nil, err
+	}
+
+	userName = parts[1]
+
+	userCounter, err = strconv.Atoi(parts[2])
+	if err != nil {
+		return nil, err
+	}
+
 	return &UserMaimai{
 		User:        UserName(userName),
 		UploadTime:  uploadTime,
@@ -101,13 +86,7 @@ func (m UserMaimai) Href() string {
 // FileName returns the maimais filename
 // e.g. 12_hans_1.gif
 func (m UserMaimai) FileName() string {
-	if m.Counter != -1 {
-		return fmt.Sprintf("%d_%s_%d.%s", m.Counter, m.User, m.UserCounter, m.ImageType)
-	}
-	if m.UserCounter == -1 {
-		return fmt.Sprintf("%s.%s", m.User, m.ImageType)
-	}
-	return fmt.Sprintf("%s_%d.%s", m.User, m.UserCounter, m.ImageType)
+	return fmt.Sprintf("%d_%s_%d.%s", m.Counter, m.User, m.UserCounter, m.ImageType)
 }
 
 // Preview returns the preview cached image
@@ -117,9 +96,6 @@ func (m UserMaimai) Preview() (CachedImage, error) {
 
 // Before returns true if counter is smaller than the one it is compared to
 func (m UserMaimai) Before(a UserMaimai) bool {
-	if m.Counter == -1 {
-		return string(m.User) < string(a.User)
-	}
 	return m.Counter < a.Counter
 }
 
