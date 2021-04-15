@@ -298,7 +298,7 @@ func loadTemplates(dir string) *template.Template {
 			w := t.Weekday()
 
 			weekdays := []string{"So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"}
-			return fmt.Sprintf("%s %s", weekdays[w], t.Format("15:03"))
+			return fmt.Sprintf("%s %s", weekdays[w], t.Format("15:04"))
 		},
 	}
 
