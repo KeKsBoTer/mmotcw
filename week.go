@@ -20,7 +20,7 @@ type Week struct {
 
 // SortMaimais sorts the maimais by date
 func (w *Week) SortMaimais() {
-	sort.Slice(w.Maimais[:], func(i, j int) bool {
+	sort.SliceStable(w.Maimais[:], func(i, j int) bool {
 		a, b := w.Maimais[i], w.Maimais[j]
 		return b.Before(a)
 	})
