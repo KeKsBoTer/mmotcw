@@ -22,7 +22,7 @@
             <div class="maimais">
                 {{range .Maimais}}
                 <div class="meme card {{.User}}">
-                    <a href="{{pathPrefix (.Href)}}" target="_blank" rel="noopener noreferrer">
+                    <a href="{{pathPrefix (.Href)}}?webp=false" target="_blank" rel="noopener noreferrer" type="image">
                         <img src="{{pathPrefix (.Href)}}" class="maimai" height="{{(.Preview).Size.Y}}"
                             width="{{(.Preview).Size.X}}"
                             style="background-image: url('data:image/jpg;base64,{{(.Preview).Image}}')"
