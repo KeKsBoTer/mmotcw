@@ -330,7 +330,7 @@ p {
     overflow: hidden;
 }
 
-.meme:hover .overlay {
+.card:hover .overlay {
     opacity: 1;
 }
 
@@ -363,7 +363,7 @@ p {
 }
 
 
-.meme .overlay {
+.card .overlay {
     position: absolute;
     bottom: 5px;
     opacity: 0;
@@ -371,12 +371,12 @@ p {
     color: white;
 }
 
-.meme .overlay p {
+.card .overlay p {
     background-color: black;
     padding: 3px 5px;
 }
 
-.meme .overlay small {
+.card .overlay small {
     margin-left: 5px;
     padding: 1px 3px;
     background-color: rgb(90, 90, 90);
@@ -453,6 +453,8 @@ p {
 .card {
     box-shadow: 0 5px 10px rgba(0, 0, 0, 0.05);
     border-radius: 7px 5px;
+    overflow: hidden;
+    position: relative;
 }
 
 a {
@@ -467,16 +469,8 @@ a:hover {
 
 .card.template {
     margin-bottom: 20px;
-    box-shadow: 0 5px 20px rgba(230, 182, 79, 0.7);
-}
-
-.card.template h1 {
-    font-size: 16px;
-    color: white;
-    background-color: rgb(41, 40, 54);
-    padding: 3px 7px;
-    border-radius: 3px;
-    margin: 3px;
+    /* box-shadow: 0 0 20px rgba(230, 182, 79, 0.7); */
+    border: 2px dashed white;
 }
 
 .elevator-button {
@@ -517,4 +511,29 @@ a:hover {
 
 .adminForm button:last-child {
     margin-right: 0;
+}
+
+a[download]{
+    position: relative;
+    display: block;
+    overflow: hidden;
+}
+
+a[download]:hover:before{
+    content: "Aus dem Internet klauen";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    font-size: 1em;
+    padding-top: calc(50% - 0.5em);
+    font-weight: bold;
+    text-align: center;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 10;
+}
+
+a[download]:hover > img{
+    filter: blur(10px) !important;
 }

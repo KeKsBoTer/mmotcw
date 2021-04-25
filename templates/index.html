@@ -131,9 +131,12 @@
 
                 {{if .Template}}
                 <div class="template card">
-                    <h1>Template</h1>
-                    <div>
+                    <a href="{{pathPrefix (.Template.Href)}}?webp=false" download>
                         <img alt="Template" src="{{pathPrefix (.Template.Href)}}" class="maimai" loading="lazy">
+                    </a>
+
+                    <div class="overlay">
+                        <p>Template</p>
                     </div>
                 </div>
                 {{end}}
