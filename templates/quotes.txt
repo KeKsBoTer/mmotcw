@@ -156,3 +156,10 @@ SAP: Submit And Pray
 SAP: Suck All Profit
 SAP: Suffer After Purchase
 SAP: System Against People
+Any product demo showing SAP working in a satisfactory manner is clearly fraud.
+And folks, let’s be honest. Sturgeon was an optimist. Way more than 90% of code is crap.
+Deleted code is debugged code.
+XML is like violence. Sure, it seems like a quick and easy solution at first, but then it spirals out of control into utter chaos.
+Most software today is very much like an Egyptian pyramid with millions of bricks piled on top of each other, with no structural integrity, but just done by brute force and thousands of slaves.
+Every language has an optimization operator. In C++ that operator is ‘//’
+Once a new technology starts rolling, if you’re not part of the steamroller, you’re part of the road.
