@@ -161,6 +161,10 @@ header h1 {
     background-image: url('img/theboys/lena.png');
 }
 
+#lorenz:before {
+    background-image: url('img/theboys/lorenz.png');
+}
+
 #last-year:before {
     background-image: url('img/merkel.png');
 }
