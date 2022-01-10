@@ -72,9 +72,9 @@ func index(template template.Template, source MaimaiSource, s *Subscriptions) ht
 			template = *loadTemplates("templates").Lookup("index.html")
 		}
 
-		otherYear := 2020
-		if year == 2020 {
-			otherYear = 2021
+		otherYear := year - 1
+		if otherYear < 2020 {
+			otherYear = 2020
 		}
 
 		rand.Seed(int64(time.Now().Day()))
