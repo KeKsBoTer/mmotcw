@@ -1,168 +1,129 @@
 <html>
+	<head>
+		<title>MMOTKW</title>
+		<link
+			rel="manifest"
+			href="static/manifest.json"
+			crossorigin="use-credentials"
+		/>
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<link href="static/style.css" rel="stylesheet" type="text/css" />
+		<link rel="icon" type="image/ico" href="favicon.ico" />
+		<link rel="apple-touch-icon" href="favicon.ico" />
 
-<head>
-    <title>MMOTKW</title>
-    <link rel="manifest" href="static/manifest.json" crossorigin="use-credentials">
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href="static/style.css" rel="stylesheet" type="text/css" />
-    <link rel="icon" type="image/ico" href="favicon.ico">
-    <link rel="apple-touch-icon" href="favicon.ico">
+		<script src="static/js/elevator.min.js"></script>
+		<script src="static/js/canvasjs.min.js"></script>
+		<script>
+			const vapidPublicKey = "{{.PushPublicKey}}";
+		</script>
+	</head>
 
-    <script src="static/js/elevator.min.js"></script>
-    <script src="static/js/canvasjs.min.js"></script>
-    <script>
-        const vapidPublicKey = "{{.PushPublicKey}}";
-    </script>
-</head>
+	<body>
+		<background></background>
+		<header>
+			<div class="title">
+				<a href="/"> <h1>MMOTCW</h1></a>
+				<small>Maimai of the corona week</small>
+			</div>
+			<div class="user-list">
+				{{range $user := .Users}}
+				<a href="/{{$.Year}}/{{$user}}" title="{{capitalize $user}}">
+					<div class="avatar">
+						<img
+							src="/mm/users/{{$user}}.png"
+							onerror="this.onerror=null; this.src='/static/img/taube.png'"
+						/>
+					</div>
+				</a>
+				{{end}}
+			</div>
+		</header>
+		<main>
+			<div class="uploader block">
+				<form
+					action="upload"
+					method="post"
+					enctype="multipart/form-data"
+				>
+					<h2>Maimai pfostieren</h2>
+					<input type="file" name="fileToUpload" id="fileToUpload" />
+					<input
+						type="submit"
+						id="wolken"
+						value="In die Wolken schicken"
+						name="submit"
+					/>
+				</form>
+			</div>
+			<div class="years">
+				{{range $i,$year := .Years}}
+				<a
+					href="/{{$year}}"
+					{{if
+					eq
+					$.Year
+					$year}}class="selected"
+					{{end}}
+					>{{$year}}</a
+				>
+				{{if ne (add $i 1) (len $.Years)}} | {{end}} {{end}}
+			</div>
+			{{range $week_index, $bla := .Weeks}}
+			<div class="week">
+				<a href="{{.CW.Path}}/" class="weekLink">
+					<h2>Week {{.CW.Week}}</h2>
+				</a>
+				<div class="maimais">
+					{{if .Template}}
+					<div class="template card">
+						<a
+							href="{{pathPrefix (.Template.Href)}}?webp=false"
+							download
+						>
+							<img
+								alt="Template"
+								src="{{pathPrefix (.Template.Href)}}"
+								class="maimai"
+								loading="lazy"
+							/>
+						</a>
 
-<body>
-    <background></background>
-    <header>
-        <div class="title">
-            <h1>MMOTCW</h1>
-            <small>Maimai of the corona week</small>
-        </div>
-        </a>
-    </header>
-    <main>
-        <div class="links block">
-            <ul>
-                <li id="{{.User}}">
-                    <a href="{{.User}}">
-                        Meine Seite
-                    </a>
-                </li>
-                <li id="last-year">
-                    <a href="?year={{.OtherYear}}">
-                        {{.OtherYear}} Maimais
-                    </a>
-                </li>
-                <li>
-                    <a href="/{{.Year}}/">
-                        Übersicht
-                    </a>
-                </li>
-            </ul>
-        </div>
-        <div class="quote block">
-            <small>Weisheit des Tages</small>
-            <quoteblock>„{{.Quote}}"</quoteblock><br> <span class="author">- {{.QuoteAuthor}}</span>
-        </div>
-        <div class="uploader block">
-            <form action="upload" method="post" enctype="multipart/form-data">
-                <h2>Maimai pfostieren</h2>
-                <input type="file" name="fileToUpload" id="fileToUpload">
-                <input type="submit" id="wolken" value="In die Wolken schicken" name="submit">
-            </form>
-        </div>
-        {{range $week_index, $bla := .Weeks}}
-        <div class="week">
-            <a href="{{.CW.Path}}/" class="weekLink">
-                <h2>Week {{.CW.Week}}</h2>
-            </a>
-            {{if and (eq $week_index 0) $bla.CanVote}}
-            <form action="vote" method="post" enctype="multipart/form-data">
-                <table>
-                    {{$votes := numVotes .Maimais}}
-                    {{range $i, $maimai := .Maimais}}
-                    {{if eq $i 0}}
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th colspan="{{len $votes}}">Stimme</th>
-                        </tr>
-                        <tr>
-                            <th>Maimai</th>
-                            {{range $votes}}
-                            <th>{{.}}</th>
-                            {{end}}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{end}}
-                        <tr>
-                            <td>{{.FileName}}</td>
-                            {{range $votes}}
-                            <td>
-                                <input type="radio" id="{{$maimai.FileName}}" name="{{.}}" value="{{$maimai.FileName}}">
-                            </td>
-                            {{end}}
-                        </tr>
-                        {{end}}
-                        </tr>
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td><input type="submit" value="Abstimmen!"></td>
-                        </tr>
+						<div class="overlay">
+							<p>Template</p>
+						</div>
+					</div>
+					{{end}} {{range .Maimais}}
+					<div
+						class="meme card"
+						style="--user-image: url('/mm/users/{{.User}}.png');"
+					>
+						<a
+							href="{{pathPrefix (.Href)}}?webp=false"
+							target="_blank"
+							rel="noopener noreferrer"
+							type="image"
+						>
+							<img
+								src="{{pathPrefix (.Href)}}"
+								class="maimai"
+								height="{{(.Preview).Size.Y}}"
+								width="{{(.Preview).Size.X}}"
+								style="background-image: url('data:image/jpg;base64,{{(.Preview).Image}}')"
+								loading="lazy"
+							/>
+						</a>
+						<div class="overlay">
+							<small>{{formatTime .UploadTime}}</small>
+							<p>{{.FileName}}</p>
+						</div>
+					</div>
+					{{end}}
+				</div>
+			</div>
+			{{end}}
+			<button class="elevator-button">Back to Top</button>
+		</main>
 
-                        <tr>
-                            <td><small style="color: darkgrey;">{{len .UserVotes}} haben bereits abgestimmt</small></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </form>
-            {{end}}
-            <div class="maimais">
-                {{if .FinishedVoting }}
-                <div class="results card">
-                    <h1>Ergebnisse {{formatCW .CW.Week}}</h1>
-                    <table class="votesTable">
-                        <thead>
-                            <tr>
-                                <th>Votes</th>
-                                <th>MaiMai</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{range $index, $vote := .Votes}}
-                            <tr>
-                                <td>{{$vote.Votes}}</td>
-                                <td><a href="{{pathPrefix ($vote.Path)}}">{{$vote.FileName}}</a></td>
-                            </tr>
-                            {{end}}
-                        </tbody>
-                    </table>
-                    <div class="chartContainer" style="height: 280px; width: calc(100% - 20px); margin:10px;"
-                        data="{{toJson (.Votes)}}">
-                    </div>
-                </div>
-                {{end}}
-
-                {{if .Template}}
-                <div class="template card">
-                    <a href="{{pathPrefix (.Template.Href)}}?webp=false" download>
-                        <img alt="Template" src="{{pathPrefix (.Template.Href)}}" class="maimai" loading="lazy">
-                    </a>
-
-                    <div class="overlay">
-                        <p>Template</p>
-                    </div>
-                </div>
-                {{end}}
-
-                {{range .Maimais}}
-                <div class="meme card {{.User}}">
-                    <a href="{{pathPrefix (.Href)}}?webp=false" target="_blank" rel="noopener noreferrer" type="image">
-                        <img src="{{pathPrefix (.Href)}}" class="maimai" height="{{(.Preview).Size.Y}}"
-                            width="{{(.Preview).Size.X}}"
-                            style="background-image: url('data:image/jpg;base64,{{(.Preview).Image}}')"
-                            loading="lazy" />
-                    </a>
-                    <div class="overlay">
-                        <small>{{formatTime .UploadTime}}</small>
-                        <p>{{.FileName}}</p>
-                    </div>
-                </div>
-                {{end}}
-            </div>
-        </div>
-        {{end}}
-        <button class="elevator-button">Back to Top</button>
-    </main>
-
-
-    <script src="static/js/script.js"></script>
-</body>
-
+		<script src="static/js/script.js"></script>
+	</body>
 </html>

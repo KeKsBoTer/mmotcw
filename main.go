@@ -18,6 +18,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
 	"github.com/gorilla/mux"
 	logger "github.com/withmandala/go-log"
@@ -50,14 +51,11 @@ func GetMaimais(source MaimaiSource, year int) ([]Week, error) {
 	return weeks, nil
 }
 
-func index(template template.Template, source MaimaiSource, s *Subscriptions) http.HandlerFunc {
+func index(template template.Template, source MaimaiSource, s *Subscriptions, users []string) http.HandlerFunc {
 	fq, _ := os.Open("templates/quotes.txt")
 	defer fq.Close()
 	q, _ := io.ReadAll(fq)
 	quotes := strings.Split(string(q), "\n")
-
-	users := []string{"Simon", "Matthis", "Fabio", "Jannis", "Lena", "Christian", "Daniel", "Lorenz"}
-
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		user, _, _ := r.BasicAuth()
@@ -72,10 +70,7 @@ func index(template template.Template, source MaimaiSource, s *Subscriptions) ht
 			template = *loadTemplates("templates").Lookup("index.html")
 		}
 
-		otherYear := year - 1
-		if otherYear < 2020 {
-			otherYear = 2020
-		}
+		years := source.GetYears()
 
 		rand.Seed(int64(time.Now().Day()))
 
@@ -84,17 +79,19 @@ func index(template template.Template, source MaimaiSource, s *Subscriptions) ht
 			User          string
 			PushPublicKey string
 			Year          int
-			OtherYear     int
 			Quote         string
 			QuoteAuthor   string
+			Users         []string
+			Years         []int
 		}{
 			Weeks:         maimais,
 			User:          user,
 			PushPublicKey: s.publicKey,
 			Year:          year,
-			OtherYear:     otherYear,
 			Quote:         quotes[rand.Intn(len(quotes))],
 			QuoteAuthor:   users[rand.Intn(len(users))],
+			Users:         users,
+			Years:         years,
 		})
 		if err != nil {
 			fmt.Println(err)
@@ -103,7 +100,7 @@ func index(template template.Template, source MaimaiSource, s *Subscriptions) ht
 	}
 }
 
-func userContent(template template.Template, source MaimaiSource) http.HandlerFunc {
+func userContent(template template.Template, source MaimaiSource, users []string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
 		user := mux.Vars(r)["user"]
@@ -114,28 +111,36 @@ func userContent(template template.Template, source MaimaiSource) http.HandlerFu
 			log.Error(err)
 			return
 		}
-		empty := true
+		found := false
+		for _, u := range users {
+			if u == user {
+				found = true
+			}
+		}
+		if !found {
+			httpError(w, http.StatusNotFound)
+			return
+		}
 		for w := range weeks {
 			filtered := []UserMaimai{}
 			for _, m := range weeks[w].Maimais {
 				if strings.EqualFold(string(m.User), user) {
 					filtered = append(filtered, m)
-					empty = false
 				}
 			}
 			weeks[w].Maimais = filtered
 		}
-		if empty {
-			httpError(w, http.StatusNotFound)
-			return
-		}
+
+		years := source.GetYears()
 
 		err = template.Execute(w, struct {
 			Weeks []Week
 			User  string
+			Years []int
 		}{
 			Weeks: weeks,
 			User:  user,
+			Years: years,
 		})
 		if err != nil {
 			fmt.Println(err)
@@ -175,55 +180,18 @@ func week(template template.Template, source MaimaiSource) http.HandlerFunc {
 	}
 }
 
-func year(template template.Template, source MaimaiSource) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		year, _ := strconv.Atoi(mux.Vars(r)["year"])
-		CWs, err := source.GetCWsOfYear(year)
-		if err != nil {
-			switch err.(type) {
-			case *os.PathError:
-				httpError(w, http.StatusNotFound)
-			default:
-				log.Error(err)
-				httpError(w, http.StatusInternalServerError)
-			}
-			return
-		}
-
-		firstCW := CWs[0]
-		cwFiller := make([]CW, firstCW.Week%10)
-		cwFiller = append(cwFiller, CWs...)
-
-		const columns = 10
-		l := len(cwFiller) / columns
-		if len(cwFiller)%columns != 0 {
-			l++
-		}
-		splitCw := make([][]CW, l)
-		for i := range splitCw {
-			splitCw[i] = cwFiller[i*columns : min((i+1)*columns, len(cwFiller)-1)]
-		}
-
-		err = template.Execute(w, struct {
-			Year  int
-			Weeks [][]CW
-		}{
-			Year:  year,
-			Weeks: splitCw,
-		})
-		if err != nil {
-			log.Error(err)
-			return
-		}
-	}
-}
-
 func faviconHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/favicon.ico")
 }
 
 func createRouter(templates *template.Template, source MaimaiSource, sub *Subscriptions) *mux.Router {
-	r := mux.NewRouter()
+
+	users, err := source.GetUsers()
+	if err != nil {
+		log.Fatalf("cannot load users: %s\n", err)
+	}
+
+	r := mux.NewRouter().StrictSlash(false)
 	r.HandleFunc("/favicon.ico", faviconHandler)
 
 	fs := http.FileServer(http.Dir("./static"))
@@ -233,25 +201,21 @@ func createRouter(templates *template.Template, source MaimaiSource, sub *Subscr
 	fsMaimais := http.FileServer(http.Dir(string(source)))
 	r.PathPrefix("/mm/").Handler(http.StripPrefix("/mm/", fsMaimais))
 
-	r.HandleFunc("/", index(*templates.Lookup("index.html"), source, sub))
+	r.HandleFunc("/", index(*templates.Lookup("index.html"), source, sub, users))
 
 	r.HandleFunc("/sw.js", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./static/js/sw.js")
 	})
 
-	r.HandleFunc("/vote", vote(source))
-
 	r.HandleFunc("/upload", uploadHandler(source, sub))
-
-	r.PathPrefix("/admin").Handler(adminRouter(*templates.Lookup("admin.html"), source))
 
 	r.HandleFunc("/subscribe", subscribe(sub))
 
-	r.HandleFunc("/{user:[a-z]+}", userContent(*templates.Lookup("user.html"), source))
+	r.HandleFunc("/{year:202[0-9]}/{user:[a-z]+}", userContent(*templates.Lookup("user.html"), source, users))
 
-	r.HandleFunc("/{year:202[0-9]}/", year(*templates.Lookup("year.html"), source))
+	r.HandleFunc("/{year:202[0-9]}", index(*templates.Lookup("index.html"), source, sub, users))
 
-	r.HandleFunc("/{year:202[0-9]}/CW_{week:[0-9]+}/", week(*templates.Lookup("week.html"), source))
+	r.HandleFunc("/{year:202[0-9]}/CW_{week:[0-9]+}", week(*templates.Lookup("week.html"), source))
 
 	return r
 }
@@ -269,16 +233,8 @@ func readFlags() (string, int, string, bool) {
 func loadTemplates(dir string) *template.Template {
 
 	funcMap := template.FuncMap{
-		"numVotes": func(maimais []UserMaimai) []int {
-			v := voteCount(len(maimais))
-			votes := make([]int, v)
-			for i := range votes {
-				votes[i] = i
-			}
-			return votes
-		},
-		"add": func(a, b int) string {
-			return fmt.Sprintf("%02d", a+b)
+		"add": func(a, b int) int {
+			return a + b
 		},
 		"formatCW": func(cw int) string {
 			return fmt.Sprintf("CW_%02d", cw)
@@ -299,6 +255,11 @@ func loadTemplates(dir string) *template.Template {
 
 			weekdays := []string{"So", "Mo", "Di", "Mi", "Do", "Fr", "Sa"}
 			return fmt.Sprintf("%s %s", weekdays[w], t.Format("15:04"))
+		},
+		"capitalize": func(name string) string {
+			s := []rune(name)
+			s[0] = unicode.ToUpper(rune(name[0]))
+			return string(s)
 		},
 	}
 

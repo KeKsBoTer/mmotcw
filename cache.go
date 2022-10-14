@@ -35,7 +35,7 @@ type PreviewCache struct {
 	cache sync.Map
 }
 
-// GetImage returns Base54 encoded image of path
+// GetImage returns Base64 encoded image of path
 // returns empty image if something goes wrong
 func (c *PreviewCache) GetImage(imgPath string) (CachedImage, error) {
 	if cache, ok := c.cache.Load(imgPath); ok {

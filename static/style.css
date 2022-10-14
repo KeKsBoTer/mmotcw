@@ -22,12 +22,9 @@ background {
 }
 
 header {
-    display: flex;
-    align-content: center;
-    justify-content: center;
-
-    align-items: center;
-    flex-direction: column;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 0 10px;
 }
 
 header .title {
@@ -59,6 +56,19 @@ header h1 {
     font-size: min(8vw, 2em);
     text-align: center;
     margin-bottom: 10px;
+}
+
+.years{
+    background-color: black;padding: 10px 20px; width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    border-radius: 5px;
+}
+
+.years a.selected{
+    text-decoration: underline;
 }
 
 @media screen and (max-width:700px) {
@@ -396,10 +406,11 @@ p {
     border-radius: 50%;
     width: 35px;
     height: 35px;
-    background-image: url(img/taube.png);
+    /* background-image: url(img/taube.png); */
+    background-image: var(--user-image);
     background-color: white;
     background-repeat: no-repeat;
-    background-size: 65%;
+    background-size: contain;
     background-position: center;
     opacity: 0;
     z-index: 10;
@@ -407,34 +418,6 @@ p {
 
 .card.meme:hover:before {
     opacity: 1;
-}
-
-.card.meme.simon:hover:before {
-    background-image: url(img/theboys/simon.png);
-}
-
-.card.meme.jannis:hover:before {
-    background-image: url(img/theboys/jannis.png);
-}
-
-.card.meme.lena:hover:before {
-    background-image: url(img/theboys/lena.png);
-}
-
-.card.meme.matthis:hover:before {
-    background-image: url(img/theboys/matthis.png);
-}
-
-.card.meme.christian:hover:before {
-    background-image: url(img/theboys/christian.png);
-}
-
-.card.meme.fabio:hover:before {
-    background-image: url(img/theboys/fabio.png);
-}
-
-.card.meme.daniel:hover:before {
-    background-image: url(img/theboys/daniel.png);
 }
 
 
@@ -540,4 +523,28 @@ a[download]:hover:before{
 
 a[download]:hover > img{
     filter: blur(10px) !important;
+}
+
+.user-list{
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    gap: 10px;
+    padding: 20px 0;
+    flex-wrap: wrap;
+
+}
+.user-list .avatar{
+    width: 3rem;
+    height: 3rem;
+    background-color: white;
+    border-radius: 50%;
+    padding: 4px;
+    overflow: hidden;
+}
+
+.user-list .avatar img{
+    height: 100%;
+    margin: 0 auto;
+    display: block;
 }

@@ -28,28 +28,6 @@
     <main>
         <div class="week">
             <div class="maimais">
-                {{if .Maimais.Votes }}
-                <div class="results card">
-                    <h1>Ergebnisse CW_{{.Week}}</h1>
-                    <table class="votesTable"></table>
-                    <thead>
-                        <tr>
-                            <th>Votes</th>
-                            <th>MaiMai</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{range $index, $vote := .Maimais.Votes}}
-                        <tr>
-                            <td>{{$vote.Votes}}</td>
-                            <td><a href="{{$vote.Path}}">{{$vote.FileName}}</a></td>
-                        </tr>
-                        {{end}}
-                    </tbody>
-                    </table>
-                </div>
-                {{end}}
-
                 {{range .Maimais.Maimais}}
                 <div class="meme card {{.User}}">
                     <a href="/{{pathPrefix (.Href)}}?webp=false" target="_blank" rel="noopener noreferrer" type="image">

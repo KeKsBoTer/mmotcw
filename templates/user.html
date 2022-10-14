@@ -1,18 +1,18 @@
 <html>
 
 <head>
-    <title>{{.User}}</title>
+    <title>{{capitalize .User}}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link href="static/style.css" rel="stylesheet" type="text/css" />
-    <link rel="icon" type="image/ico" href="favicon.ico">
-    <link rel="apple-touch-icon" href="favicon.ico">
+    <link href="/static/style.css" rel="stylesheet" type="text/css" />
+    <link rel="icon" type="image/ico" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/favicon.ico">
 
-    <script src="static/js/elevator.min.js"></script>
+    <script src="/static/js/elevator.min.js"></script>
 </head>
 
 <body>
     <header>
-        <h1>{{.User}}</h1>
+        <h1>{{capitalize .User}}</h1>
         <small>seine/ihre Kunstwerke</small>
     </header>
     <main>
@@ -23,7 +23,7 @@
                 {{range .Maimais}}
                 <div class="meme card {{.User}}">
                     <a href="{{pathPrefix (.Href)}}?webp=false" target="_blank" rel="noopener noreferrer" type="image">
-                        <img src="{{pathPrefix (.Href)}}" class="maimai" height="{{(.Preview).Size.Y}}"
+                        <img src="/{{pathPrefix (.Href)}}" class="maimai" height="{{(.Preview).Size.Y}}"
                             width="{{(.Preview).Size.X}}"
                             style="background-image: url('data:image/jpg;base64,{{(.Preview).Image}}')"
                             loading="lazy" />
@@ -40,7 +40,7 @@
         <button class="elevator-button">Back to Top</button>
     </main>
 
-    <script src="static/js/script.js"></script>
+    <script src="/static/js/script.js"></script>
 </body>
 
 </html>

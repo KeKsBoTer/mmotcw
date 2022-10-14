@@ -6,9 +6,8 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"time"
 )
-
-// TODO maybe only expose interface for file reading
 
 // MaimaiSource is a directory that containes all maimais
 type MaimaiSource string
@@ -43,25 +42,6 @@ func (m MaimaiSource) GetMaimaisForCW(cw CW) (*Week, error) {
 	return &week, nil
 }
 
-// GetVoteResults reads voting results from directory
-func (m MaimaiSource) GetVoteResults(cw CW) (UserVotes, error) {
-	voteFilePath := filepath.Join(string(m), cw.Path(), "votes.txt")
-	_, err := os.Stat(voteFilePath)
-	if err == nil {
-		votesFile, err := os.Open(voteFilePath)
-		if err != nil {
-			return nil, err
-		}
-		votes, err := ParseVotesFile(votesFile)
-		if err != nil {
-			return nil, err
-		}
-
-		return votes, nil
-	}
-	return nil, err
-}
-
 func (m MaimaiSource) GetCWsOfYear(year int) ([]CW, error) {
 	yearS := strconv.Itoa(year)
 	yearPath := filepath.Join(string(m), yearS)
@@ -80,4 +60,31 @@ func (m MaimaiSource) GetCWsOfYear(year int) ([]CW, error) {
 		}
 	}
 	return CWs, nil
+}
+
+func (m MaimaiSource) GetUsers() ([]string, error) {
+	data, err := os.ReadFile(path.Join(string(m), "users.txt"))
+	if err != nil {
+		return nil, err
+	}
+	users := strings.Split(string(data), "\n")
+	for i := range users {
+		users[i] = strings.ToLower(strings.TrimSpace(users[i]))
+	}
+	return users, nil
+}
+
+func (m MaimaiSource) GetYears() []int {
+	yearFolders, err := filepath.Glob(path.Join(string(m), "[0-9][0-9][0-9][0-9]"))
+	if err != nil {
+		log.Error(err)
+		now := [1]int{time.Now().Year()}
+		return now[:]
+	}
+	years := make([]int, len(yearFolders))
+	for i, y := range yearFolders {
+		yi, _ := strconv.Atoi(path.Base(y))
+		years[i] = yi
+	}
+	return years
 }

@@ -10,8 +10,6 @@ import (
 type Week struct {
 	Maimais        []UserMaimai
 	CW             CW
-	Votes          Votes
-	UserVotes      UserVotes
 	CanVote        bool
 	FinishedVoting bool
 	// template file name
@@ -49,29 +47,5 @@ func ReadWeek(directory string) (*Week, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	uploadLock := CheckLock("upload", directory)
-	voteLock := CheckLock("vote", directory)
-
-	week.UserVotes = UserVotes{}
-	week.Votes = Votes{}
-
-	if CheckLock("upload", filepath.Join(string(source), cw.Path())) {
-		userVotes, err := source.GetVoteResults(*cw)
-		if err == nil {
-			week.UserVotes = userVotes
-			votes := userVotes.GetVotes()
-			for i, v := range votes {
-				votes[i].Path = filepath.Join(cw.Path(), v.FileName)
-			}
-			week.Votes = votes
-		} else {
-			log.Error(err)
-		}
-
-	}
-
-	week.CanVote = uploadLock && !voteLock
-	week.FinishedVoting = voteLock && uploadLock
 	return week, nil
 }

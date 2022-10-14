@@ -8,7 +8,6 @@ import (
 )
 
 func checkCWFolder(cw CW, path string) (string, error) {
-
 	folderInfo, err := os.Stat(filepath.Join(path, cw.Path()))
 	if os.IsNotExist(err) {
 		err := os.MkdirAll(filepath.Join(path, cw.Path()), 0755)
