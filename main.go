@@ -258,7 +258,9 @@ func loadTemplates(dir string) *template.Template {
 		},
 		"capitalize": func(name string) string {
 			s := []rune(name)
-			s[0] = unicode.ToUpper(rune(name[0]))
+			if len(s) > 0 {
+				s[0] = unicode.ToUpper(rune(name[0]))
+			}
 			return string(s)
 		},
 	}
