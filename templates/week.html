@@ -34,6 +34,7 @@
                         <img src="/{{pathPrefix (.Href)}}" class="maimai" height="{{(.Preview).Size.Y}}"
                             width="{{(.Preview).Size.X}}"
                             style="background-image: url('data:image/jpg;base64,{{(.Preview).Image}}')"
+                            onload="this.style.filter='none'"
                             loading="lazy" />
                     </a>
                     <div class="overlay">

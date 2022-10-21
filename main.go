@@ -6,10 +6,10 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
+	"image/color"
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
-	"io"
 	"math/rand"
 	"net/http"
 	"os"
@@ -52,12 +52,8 @@ func GetMaimais(source MaimaiSource, year int) ([]Week, error) {
 }
 
 func index(template template.Template, source MaimaiSource, s *Subscriptions, users []string) http.HandlerFunc {
-	fq, _ := os.Open("templates/quotes.txt")
-	defer fq.Close()
-	q, _ := io.ReadAll(fq)
-	quotes := strings.Split(string(q), "\n")
-	return func(w http.ResponseWriter, r *http.Request) {
 
+	return func(w http.ResponseWriter, r *http.Request) {
 		user, _, _ := r.BasicAuth()
 		year := getYear(r)
 		maimais, err := GetMaimais(source, year)
@@ -69,6 +65,7 @@ func index(template template.Template, source MaimaiSource, s *Subscriptions, us
 		if log.IsDebug() {
 			template = *loadTemplates("templates").Lookup("index.html")
 		}
+		w.Header().Add("Content-Type", "text/html")
 
 		years := source.GetYears()
 
@@ -79,8 +76,6 @@ func index(template template.Template, source MaimaiSource, s *Subscriptions, us
 			User          string
 			PushPublicKey string
 			Year          int
-			Quote         string
-			QuoteAuthor   string
 			Users         []string
 			Years         []int
 		}{
@@ -88,13 +83,11 @@ func index(template template.Template, source MaimaiSource, s *Subscriptions, us
 			User:          user,
 			PushPublicKey: s.publicKey,
 			Year:          year,
-			Quote:         quotes[rand.Intn(len(quotes))],
-			QuoteAuthor:   users[rand.Intn(len(users))],
 			Users:         users,
 			Years:         years,
 		})
 		if err != nil {
-			fmt.Println(err)
+			log.Error(err)
 			return
 		}
 	}
@@ -143,7 +136,7 @@ func userContent(template template.Template, source MaimaiSource, users []string
 			Years: years,
 		})
 		if err != nil {
-			fmt.Println(err)
+			log.Error(err)
 			return
 		}
 	}
@@ -263,6 +256,10 @@ func loadTemplates(dir string) *template.Template {
 			}
 			return string(s)
 		},
+		"rgba": func(c color.Color) string {
+			r, g, b, a := c.RGBA()
+			return fmt.Sprintf("%d,%d,%d,%d", r/255, g/255, b/255, a/255)
+		},
 	}
 
 	return template.Must(template.New("templates").Funcs(funcMap).ParseGlob(filepath.Join(dir, "*.html")))
@@ -275,8 +272,6 @@ func main() {
 		log = log.WithDebug()
 	}
 	miamaiDir, port, subsDir, skipCacheInit := readFlags()
-
-	ImgCache.dir = miamaiDir
 
 	sub, err := ReadSubscriptions(
 		subsDir+"/sub_key",
@@ -291,6 +286,7 @@ func main() {
 
 	source := MaimaiSource(miamaiDir)
 	router := createRouter(templates, source, sub)
+
 	http.Handle("/", router)
 
 	if !skipCacheInit {

@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html>
 	<head>
 		<title>MMOTKW</title>
@@ -12,7 +13,6 @@
 		<link rel="apple-touch-icon" href="favicon.ico" />
 
 		<script src="static/js/elevator.min.js"></script>
-		<script src="static/js/canvasjs.min.js"></script>
 		<script>
 			const vapidPublicKey = "{{.PushPublicKey}}";
 		</script>
@@ -46,31 +46,33 @@
 					enctype="multipart/form-data"
 				>
 					<h2>Maimai pfostieren</h2>
-					<input type="file" name="fileToUpload" id="fileToUpload" />
-					<input
-						type="submit"
-						id="wolken"
-						value="In die Wolken schicken"
-						name="submit"
-					/>
+					<div class="file-select">
+						<input
+							type="file"
+							name="fileToUpload"
+							id="fileToUpload"
+						/>
+						<input
+							type="submit"
+							id="wolken"
+							value="In die Wolken schicken"
+							name="submit"
+						/>
+					</div>
 				</form>
 			</div>
 			<div class="years">
 				{{range $i,$year := .Years}}
 				<a
 					href="/{{$year}}"
-					{{if
-					eq
-					$.Year
-					$year}}class="selected"
-					{{end}}
+					{{if eq $.Year $year}} class="selected" {{end}}
 					>{{$year}}</a
 				>
 				{{if ne (add $i 1) (len $.Years)}} | {{end}} {{end}}
 			</div>
 			{{range $week_index, $bla := .Weeks}}
 			<div class="week">
-				<a href="{{.CW.Path}}/" class="weekLink">
+				<a href="{{.CW.Path}}" class="weekLink">
 					<h2>Week {{.CW.Week}}</h2>
 				</a>
 				<div class="maimais">
@@ -109,6 +111,7 @@
 								height="{{(.Preview).Size.Y}}"
 								width="{{(.Preview).Size.X}}"
 								style="background-image: url('data:image/jpg;base64,{{(.Preview).Image}}')"
+								onload="this.style.filter='none'"
 								loading="lazy"
 							/>
 						</a>

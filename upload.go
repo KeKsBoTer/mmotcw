@@ -63,7 +63,11 @@ func uploadHandler(source MaimaiSource, s *Subscriptions) http.HandlerFunc {
 			return
 		}
 
-		user, _, _ := r.BasicAuth()
+		user, _, ok := r.BasicAuth()
+		if !ok {
+			httpError(w, http.StatusUnauthorized)
+			return
+		}
 		weekData, err := ReadWeek(folderCW)
 		if err != nil {
 			log.Error(err)

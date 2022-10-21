@@ -41,6 +41,7 @@ header .title h1 {
     margin-bottom: -20px;
     color: white;
     text-stroke: 3px black;
+    webkit-text-stroke: 3px black;
     -webkit-text-stroke: 3px black;
     font-family: Impact, sans-serif;
     letter-spacing: -.04em;
@@ -50,12 +51,23 @@ header .title small {
     font-size: min(4vw, 1.8em);
     text-shadow: 0 0px 7px rgba(255, 255, 255, 0.5);
     margin: 10px 0;
+    color: white;
+    background-color: black;
+    padding: 7px 20px;
+    text-align: center;
 }
 
 header h1 {
     font-size: min(8vw, 2em);
     text-align: center;
     margin-bottom: 10px;
+}
+header a:hover {
+    text-decoration: none;
+}
+header a:hover h1 {
+    -webkit-text-stroke: 5px black;
+    text-stroke: 5px black;
 }
 
 .years{
@@ -228,10 +240,19 @@ button {
     padding: 10px;
     font-weight: b;
     margin-bottom: 0;
+    row-gap: 20px;
 }
 
 .uploader form h2 {
     margin-top: 0;
+}
+
+.uploader form .file-select{
+    display: flex;
+    flex-wrap: wrap;
+    row-gap: 10px;
+    justify-content: space-between;
+    justify-items: right;
 }
 
 main {
@@ -348,13 +369,19 @@ p {
     opacity: 1;
 }
 
-.week img {
+.week .card img {
     background-color: lightgray;
     overflow: hidden;
     width: 330px;
     background-size: cover;
     height: attr("height"px);
     width: attr("width"px);
+}
+
+.week .card:not(.template) img {
+
+    transition: filter .2s;
+    image-rendering: optimizeQuality;
     filter: blur(10px);
 }
 
@@ -460,6 +487,10 @@ a:hover {
     border: 2px dashed white;
 }
 
+.card a{
+    display: inherit;
+}
+
 .elevator-button {
     display: block;
     margin: 20px;
@@ -502,7 +533,7 @@ a:hover {
 
 a[download]{
     position: relative;
-    display: block;
+    display: flex;
     overflow: hidden;
 }
 

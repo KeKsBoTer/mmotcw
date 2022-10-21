@@ -68,8 +68,9 @@ func (c *PreviewCache) cacheImage(imgPath string) error {
 	}
 
 	cachedImage.Size.Y = int(ratio * float32(cachedImage.Size.X))
+	res := uint(8)
 	// create small image preview
-	smallImage := resize.Resize(20, uint(ratio*20), img, resize.Lanczos3)
+	smallImage := resize.Thumbnail(res, res, img, resize.Lanczos3)
 	buffer := bytes.NewBuffer([]byte{})
 	if err := jpeg.Encode(buffer, smallImage, nil); err != nil {
 		return err
@@ -82,6 +83,8 @@ func (c *PreviewCache) cacheImage(imgPath string) error {
 
 // InitCache loads images for current year and last three years into cache
 func InitCache(source MaimaiSource) error {
+
+	ImgCache.dir = string(source)
 	year, _ := time.Now().ISOWeek()
 
 	worker := func(jobs <-chan Maimai, wg *sync.WaitGroup) {

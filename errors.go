@@ -17,6 +17,9 @@ func httpError(w http.ResponseWriter, code int) {
 	case http.StatusMethodNotAllowed:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		fmt.Fprint(w, "hier wird nur gePOSTed!")
+	case http.StatusUnauthorized:
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprint(w, "ich kenn dich nicht!")
 	case http.StatusBadRequest:
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		fmt.Fprint(w, "so kann ich nicht arbeiten")

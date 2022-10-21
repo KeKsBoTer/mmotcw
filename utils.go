@@ -34,18 +34,17 @@ func GetImageFiles(folder string) ([]os.FileInfo, error) {
 	return images, nil
 }
 
+// Extracts current year from request
+// checks for the mux var "year" and tries to convert it to an int
+// If the param is not present or not an integer the current year is returned
 func getYear(r *http.Request) int {
 	// change year if year is given
 	if y, ok := mux.Vars(r)["year"]; ok {
-		yy, _ := strconv.Atoi(y)
-		return yy
+		if yy, err := strconv.Atoi(y); err != nil {
+			return time.Now().Year()
+		} else {
+			return yy
+		}
 	}
 	return time.Now().Year()
-}
-
-func min(x, y int) int {
-	if x < y {
-		return x
-	}
-	return y
 }
