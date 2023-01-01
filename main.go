@@ -10,7 +10,6 @@ import (
 	_ "image/gif"
 	_ "image/jpeg"
 	_ "image/png"
-	"math/rand"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -42,7 +41,12 @@ func GetMaimais(source MaimaiSource, year int) ([]Week, error) {
 		if err != nil {
 			return nil, err
 		}
-		weeks[i] = *week
+		if len(week.Maimais) == 0 {
+			// if week folder is empty we remove it
+			weeks = append(weeks[:i], weeks[i+1:]...)
+		} else {
+			weeks[i] = *week
+		}
 	}
 	// sort weeks
 	sort.Slice(weeks[:], func(i, j int) bool {
@@ -68,8 +72,6 @@ func index(template template.Template, source MaimaiSource, s *Subscriptions, us
 		w.Header().Add("Content-Type", "text/html")
 
 		years := source.GetYears()
-
-		rand.Seed(int64(time.Now().Day()))
 
 		err = template.Execute(w, struct {
 			Weeks         []Week
@@ -289,9 +291,11 @@ func main() {
 
 	http.Handle("/", router)
 
+	ImgCache.dir = string(source)
+
 	if !skipCacheInit {
 		go func() {
-			err = InitCache(source)
+			err = FillCache()
 			if err != nil {
 				log.Fatal(err)
 			}

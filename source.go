@@ -85,7 +85,8 @@ func (m MaimaiSource) GetYears() []int {
 	yearFolders, err := filepath.Glob(path.Join(string(m), "[0-9][0-9][0-9][0-9]"))
 	if err != nil {
 		log.Error(err)
-		now := [1]int{time.Now().Year()}
+		year, _ := time.Now().ISOWeek()
+		now := [1]int{year}
 		return now[:]
 	}
 	years := make([]int, len(yearFolders))

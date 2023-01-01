@@ -82,9 +82,8 @@ func (c *PreviewCache) cacheImage(imgPath string) error {
 }
 
 // InitCache loads images for current year and last three years into cache
-func InitCache(source MaimaiSource) error {
+func FillCache() error {
 
-	ImgCache.dir = string(source)
 	year, _ := time.Now().ISOWeek()
 
 	worker := func(jobs <-chan Maimai, wg *sync.WaitGroup) {
@@ -106,7 +105,7 @@ func InitCache(source MaimaiSource) error {
 	}
 
 	for i := 0; i < 3; i++ {
-		weeks, err := GetMaimais(source, year-i)
+		weeks, err := GetMaimais(MaimaiSource(ImgCache.dir), year-i)
 		if err != nil {
 			return err
 		}

@@ -41,10 +41,12 @@ func getYear(r *http.Request) int {
 	// change year if year is given
 	if y, ok := mux.Vars(r)["year"]; ok {
 		if yy, err := strconv.Atoi(y); err != nil {
-			return time.Now().Year()
+			year, _ := time.Now().ISOWeek()
+			return year
 		} else {
 			return yy
 		}
 	}
-	return time.Now().Year()
+	year, _ := time.Now().ISOWeek()
+	return year
 }
